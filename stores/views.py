@@ -92,6 +92,7 @@ class Stores(APIView):
     def get(self, request):
         all_store = Store.objects.all()
         serializer = StoreListSerializer(all_store, many=True, context={'request': request})
+        print(Response(serializer.data))
         return Response(serializer.data)
     
     def post(self, request):

@@ -17,4 +17,6 @@ urlpatterns = [
     path("@<str:username>/reviews/<int:pk>", UserReviewDetail.as_view()),
     path("@<str:username>/stores", UserStore.as_view()),
     path("@<str:username>/stores/<int:pk>", UserStoreDetail.as_view()),
+
+    path("token-login", obtain_auth_token),
 ]

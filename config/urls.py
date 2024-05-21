@@ -25,4 +25,5 @@ urlpatterns = [
     path('api/v1/medias/', include("medias.urls")),
     path('api/v1/bookings/', include("bookings.urls")),
     path('api/v1/users/', include("users.urls")),
+    path('api/v1/groups/', include("userGroup.urls")),
 ] 
