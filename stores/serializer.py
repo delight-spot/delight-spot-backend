@@ -40,18 +40,17 @@ class StoreSerializer(ModelSerializer):
             "rating",
         )
     
-class StoreListSerializer(ModelSerializer):
+class ListSerializer(ModelSerializer):
 
     # SerializerMethodField()를 사용하기 위해선
     # get_rating과 같이 이름이 특정한 모양을 가져야 한다. -> get_
     # 현재 serializing하고 있는 오브젝트와 함께 호출한다.
     rating = serializers.SerializerMethodField()
     reviews_len = serializers.SerializerMethodField()
-    is_owner = serializers.SerializerMethodField()
     sell_list = SellingListSerializer(read_only=True, many=True)
     # 역접근자는 위험하다 -> 방 하나에 수 천, 수 만개의 특성을 가지고 있을 수 있기 때문이다. -> pagination이 있어야 한다.
     photos = PhotoSerializer(many=True, read_only=True)
-    is_liked = serializers.SerializerMethodField()
+    is_owner = serializers.SerializerMethodField()
 
     def get_rating(self, store):
         return store.rating()
@@ -63,9 +62,53 @@ class StoreListSerializer(ModelSerializer):
         request = self.context["request"]
         return store.owner == request.user
 
+    class Meta:
+        model = Store
+        fields = (
+            "pk",
+            "name",
+            "description",
+            "reviews_len",
+            "kind_menu",
+            "kind_detail",
+            "sell_list",
+            "city",
+            "rating",
+            "photos",
+            "is_owner"
+        )
+
+class StoreListSerializer(ModelSerializer):
+
+    rating = serializers.SerializerMethodField()
+    reviews_len = serializers.SerializerMethodField()
+    is_owner = serializers.SerializerMethodField()
+    sell_list = SellingListSerializer(read_only=True, many=True)
+    # 역접근자는 위험하다 -> 방 하나에 수 천, 수 만개의 특성을 가지고 있을 수 있기 때문이다. -> pagination이 있어야 한다.
+    photos = PhotoSerializer(many=True, read_only=True)
+    is_liked = serializers.SerializerMethodField()
+    user_name = serializers.SerializerMethodField()
+
+    def get_user_name(self, store):
+        return store.owner.username
+
+    def get_rating(self, store):
+        return store.rating()
+    
+    def get_reviews_len(self, store):
+        return store.reviews_len()
+
+    def get_is_owner(self, store):
+        request = self.context.get("request")
+        if request and hasattr(request, "user") and request.user.is_authenticated:
+            return store.owner == request.user
+        return False
+
     def get_is_liked(self, store):
-        request = self.context['request']
-        return Booking.objects.filter(user=request.user, store__pk=store.pk).exists()
+        request = self.context.get('request')
+        if request and hasattr(request, "user") and request.user.is_authenticated:
+            return Booking.objects.filter(user=request.user, store__pk=store.pk).exists()
+        return False
 
     class Meta:
         model = Store
@@ -80,6 +123,7 @@ class StoreListSerializer(ModelSerializer):
             "city",
             "rating",
             "is_owner",
+            "user_name",
             "is_liked",
             "photos",
         )
@@ -141,11 +185,13 @@ class StoreDetailSerializer(ModelSerializer):
 
     def get_is_owner(self, store):
         request = self.context.get("request")
-        if request:
+        if request and hasattr(request, "user") and request.user.is_authenticated:
             return store.owner == request.user
         return False
-    
+
     def get_is_liked(self, store):
-        request = self.context['request']
-        return Booking.objects.filter(user=request.user, store__pk=store.pk).exists()
+        request = self.context.get('request')
+        if request and hasattr(request, "user") and request.user.is_authenticated:
+            return Booking.objects.filter(user=request.user, store__pk=store.pk).exists()
+        return False
         # user가 만든 wishlist 중에 room id가 있는 room list를 포함한 wishlist를 찾아 pk가 room pk랑 일치하는 store를 찾는다.
