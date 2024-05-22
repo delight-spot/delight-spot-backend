@@ -9,7 +9,7 @@ class SellingListSerializer(ModelSerializer):
     class Meta:
         model = SellList
         fields = (
-            # "pk",
+            "pk",
             "name",
             "description",
         )

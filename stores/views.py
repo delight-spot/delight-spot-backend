@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny, IsAu
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import (NotFound, NotAuthenticated, ParseError, PermissionDenied,)
-from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST, HTTP_201_CREATED
+from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST
 
 from .serializer import StoreListSerializer, SellingListSerializer, StoreDetailSerializer, StorePostSerializer, ListSerializer
 from .models import Store, SellList
@@ -85,14 +85,6 @@ class SellingListView(APIView):
         store = self.get_object(pk)
         serializer = SellingListSerializer(store.sell_list.all()[start:end], many=True)
         return Response(serializer.data)
-
-
-# class StoreList(APIView):
-#     permission_classes = [AllowAny]
-#     def get(self, request):
-#         all_store = Store.objects.all()
-#         serializer = ListSerializer(all_store, many=True, context={'request': request})
-#         return Response(serializer.data)
 
 class Stores(APIView):
     
