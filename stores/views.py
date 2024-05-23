@@ -1,6 +1,7 @@
 from django.db import transaction
 from django.conf import settings
 from django.utils import timezone
+from django.http	import JsonResponse
 from django.contrib.auth.models import AnonymousUser
 
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny, IsAuthenticated
@@ -87,6 +88,9 @@ class SellingListView(APIView):
         return Response(serializer.data)
 
 class Stores(APIView):
+    
+    # def get(self, request):
+    #     return JsonResponse({"Hello":"World"}, status=200)
     
     permission_classes = [IsAuthenticatedOrReadOnly]
 

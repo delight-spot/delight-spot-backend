@@ -20,10 +20,13 @@ from django.conf import settings
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/v1/stores/', include("stores.urls")),
-    path('api/v1/medias/', include("medias.urls")),
-    path('api/v1/bookings/', include("bookings.urls")),
-    path('api/v1/users/', include("users.urls")),
-    path('api/v1/groups/', include("userGroup.urls")),
+    path('admin', admin.site.urls),
+
+    # path('stores/', include('stores.urls')),
+
+    path('api/v1/stores', include("stores.urls")),
+    path('api/v1/medias', include("medias.urls")),
+    path('api/v1/bookings', include("bookings.urls")),
+    path('api/v1/users', include("users.urls")),
+    path('api/v1/groups', include("userGroup.urls")),
 ] 

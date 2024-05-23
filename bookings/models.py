@@ -16,7 +16,6 @@ class Booking(CommonModel):
     )
     store = models.ManyToManyField(
         "stores.Store",
-        null=True,
         blank=True,
         default="",
         related_name="bookings",
