@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from .models import Booking
 from stores.models import Store
 from .serializers import BookingSerializer, BookingDetailSerializer
@@ -87,6 +87,9 @@ class BookingDetail(APIView):
 
 
 class BookingToggle(APIView):
+
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    
     def get_list(self, pk, user):
         try:
             return Booking.objects.get(pk=pk, user=user)

@@ -4,13 +4,13 @@ from django.utils import timezone
 from django.http	import JsonResponse
 from django.contrib.auth.models import AnonymousUser
 
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.exceptions import (NotFound, NotAuthenticated, ParseError, PermissionDenied,)
+from rest_framework.exceptions import NotFound,PermissionDenied
 from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST
 
-from .serializer import StoreListSerializer, SellingListSerializer, StoreDetailSerializer, StorePostSerializer, ListSerializer
+from .serializer import StoreListSerializer, SellingListSerializer, StoreDetailSerializer, StorePostSerializer
 from .models import Store, SellList
 from reviews.serializers import ReviewSerializer
 from medias.serializer import PhotoSerializer
