@@ -8,4 +8,16 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reviews
-        fields = ("pk", "user", "rating", "description")
+        fields = (
+            "pk",
+            "user",
+            # "rating",
+            "total_rating",
+            "taste_rating",
+            "atmosphere_rating",
+            "kindness_rating",
+            "clean_rating",
+            "parking_rating",
+            "restroom_rating",
+            "description"
+            )

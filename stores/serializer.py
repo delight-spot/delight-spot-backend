@@ -16,13 +16,39 @@ class SellingListSerializer(ModelSerializer):
 
 # bookings 전체 조회
 class StoreSerializer(ModelSerializer):
-    rating = serializers.SerializerMethodField()
+    
+    total_rating = serializers.SerializerMethodField()
+    taste_rating = serializers.SerializerMethodField()
+    atmosphere_rating = serializers.SerializerMethodField()
+    kindness_rating = serializers.SerializerMethodField()
+    clean_rating = serializers.SerializerMethodField()
+    parking_rating = serializers.SerializerMethodField()
+    restroom_rating = serializers.SerializerMethodField()
+
     reviews_len = serializers.SerializerMethodField()
     sell_list = SellingListSerializer(read_only=True, many=True)
     name = serializers.CharField()  # 추가: name 필드를 정의해야 함
     
-    def get_rating(self, store):
-        return store.rating()
+    def get_total_rating(self, store):
+        return store.total_rate()
+
+    def get_taste_rating(self, store):
+        return store.taste_rate()
+    
+    def get_atmosphere_rating(self, store):
+        return store.atmosphere_rate()
+    
+    def get_kindness_rating(self, store):
+        return store.kindness_rate()
+    
+    def get_clean_rating(self, store):
+        return store.clean_rate()
+    
+    def get_parking_rating(self, store):
+        return store.parking_rate()
+    
+    def get_restroom_rating(self, store):
+        return store.restroom_rate()
     
     def get_reviews_len(self, store):
         return store.reviews_len()
@@ -32,12 +58,17 @@ class StoreSerializer(ModelSerializer):
         fields = (
             "pk",
             "name",
-            "reviews_len",
             "kind_menu",
-            "kind_detail",
             "sell_list",
             "city",
-            "rating",
+            "reviews_len",
+            "total_rating",
+            "taste_rating",
+            "atmosphere_rating",
+            "kindness_rating",
+            "clean_rating",
+            "parking_rating",
+            "restroom_rating",
         )
     
 class ListSerializer(ModelSerializer):
@@ -45,15 +76,41 @@ class ListSerializer(ModelSerializer):
     # SerializerMethodField()를 사용하기 위해선
     # get_rating과 같이 이름이 특정한 모양을 가져야 한다. -> get_
     # 현재 serializing하고 있는 오브젝트와 함께 호출한다.
-    rating = serializers.SerializerMethodField()
+    
+    total_rating = serializers.SerializerMethodField()
+    taste_rating = serializers.SerializerMethodField()
+    atmosphere_rating = serializers.SerializerMethodField()
+    kindness_rating = serializers.SerializerMethodField()
+    clean_rating = serializers.SerializerMethodField()
+    parking_rating = serializers.SerializerMethodField()
+    restroom_rating = serializers.SerializerMethodField()
+
     reviews_len = serializers.SerializerMethodField()
     sell_list = SellingListSerializer(read_only=True, many=True)
     # 역접근자는 위험하다 -> 방 하나에 수 천, 수 만개의 특성을 가지고 있을 수 있기 때문이다. -> pagination이 있어야 한다.
     photos = PhotoSerializer(many=True, read_only=True)
     is_owner = serializers.SerializerMethodField()
 
-    def get_rating(self, store):
-        return store.rating()
+    def get_total_rating(self, store):
+        return store.total_rate()
+
+    def get_taste_rating(self, store):
+        return store.taste_rate()
+    
+    def get_atmosphere_rating(self, store):
+        return store.atmosphere_rate()
+    
+    def get_kindness_rating(self, store):
+        return store.kindness_rate()
+    
+    def get_clean_rating(self, store):
+        return store.clean_rate()
+    
+    def get_parking_rating(self, store):
+        return store.parking_rate()
+    
+    def get_restroom_rating(self, store):
+        return store.restroom_rate()
     
     def get_reviews_len(self, store):
         return store.reviews_len()
@@ -68,19 +125,34 @@ class ListSerializer(ModelSerializer):
             "pk",
             "name",
             "description",
-            "reviews_len",
             "kind_menu",
-            "kind_detail",
             "sell_list",
             "city",
-            "rating",
+            "reviews_len",
+            
+            "total_rating",
+            "taste_rating",
+            "atmosphere_rating",
+            "kindness_rating",
+            "clean_rating",
+            "parking_rating",
+            "restroom_rating",
+
             "photos",
             "is_owner"
         )
 
 class StoreListSerializer(ModelSerializer):
 
-    rating = serializers.SerializerMethodField()
+    total_rating = serializers.SerializerMethodField()
+    taste_rating = serializers.SerializerMethodField()
+    atmosphere_rating = serializers.SerializerMethodField()
+    kindness_rating = serializers.SerializerMethodField()
+    clean_rating = serializers.SerializerMethodField()
+    parking_rating = serializers.SerializerMethodField()
+    restroom_rating = serializers.SerializerMethodField()
+
+
     reviews_len = serializers.SerializerMethodField()
     is_owner = serializers.SerializerMethodField()
     sell_list = SellingListSerializer(read_only=True, many=True)
@@ -92,9 +164,29 @@ class StoreListSerializer(ModelSerializer):
     def get_user_name(self, store):
         return store.owner.username
 
-    def get_rating(self, store):
-        return store.rating()
+
+    def get_total_rating(self, store):
+        return store.total_rate()
+
+    def get_taste_rating(self, store):
+        return store.taste_rate()
     
+    def get_atmosphere_rating(self, store):
+        return store.atmosphere_rate()
+    
+    def get_kindness_rating(self, store):
+        return store.kindness_rate()
+    
+    def get_clean_rating(self, store):
+        return store.clean_rate()
+    
+    def get_parking_rating(self, store):
+        return store.parking_rate()
+    
+    def get_restroom_rating(self, store):
+        return store.restroom_rate()
+    
+
     def get_reviews_len(self, store):
         return store.reviews_len()
 
@@ -116,12 +208,19 @@ class StoreListSerializer(ModelSerializer):
             "pk",
             "name",
             "description",
-            "reviews_len",
             "kind_menu",
-            "kind_detail",
             "sell_list",
             "city",
-            "rating",
+            "reviews_len",
+
+            "total_rating",
+            "taste_rating",
+            "atmosphere_rating",
+            "kindness_rating",
+            "clean_rating",
+            "parking_rating",
+            "restroom_rating",
+
             "is_owner",
             "user_name",
             "is_liked",
@@ -137,7 +236,14 @@ class StorePostSerializer(ModelSerializer):
         many=True,
     )
     # Django REST Framework 또는 Django가 owner를 serializer하려 하면 TinyUserSerializer를 사용하라고 알려준다. = customizer
-    rating = serializers.SerializerMethodField()
+    # total_rating = serializers.SerializerMethodField()
+    # taste_rating = serializers.SerializerMethodField()
+    # atmosphere_rating = serializers.SerializerMethodField()
+    # kindness_rating = serializers.SerializerMethodField()
+    # clean_rating = serializers.SerializerMethodField()
+    # parking_rating = serializers.SerializerMethodField()
+    # restroom_rating = serializers.SerializerMethodField()
+
     is_owner = serializers.SerializerMethodField()
     photos = PhotoSerializer(many=True, read_only=True)
 
@@ -149,17 +255,42 @@ class StorePostSerializer(ModelSerializer):
             "name",
             "description",
             "kind_menu",
-            "kind_detail",
             "sell_list",
             "pet_friendly",
             "city",
-            "rating",
+            
+            # "total_rating",
+            # "taste_rating",
+            # "atmosphere_rating",
+            # "kindness_rating",
+            # "clean_rating",
+            # "parking_rating",
+            # "restroom_rating",
+
             "is_owner",
             "photos",
         )
 
-    def get_rating(self, store):
-        return store.rating()
+    # def get_total_rating(self, store):
+    #     return store.total_rate()
+
+    # def get_taste_rating(self, store):
+    #     return store.taste_rate()
+    
+    # def get_atmosphere_rating(self, store):
+    #     return store.atmosphere_rate()
+    
+    # def get_kindness_rating(self, store):
+    #     return store.kindness_rate()
+    
+    # def get_clean_rating(self, store):
+    #     return store.clean_rate()
+    
+    # def get_parking_rating(self, store):
+    #     return store.parking_rate()
+    
+    # def get_restroom_rating(self, store):
+    #     return store.restroom_rate()
 
     def get_is_owner(self, store):
         request = self.context.get("request")
@@ -171,7 +302,15 @@ class StoreDetailSerializer(ModelSerializer):
     
     owner = TinyUserSerializer(read_only=True)
     sell_list = SellingListSerializer(read_only=True, many=True)
-    rating = serializers.SerializerMethodField()
+    
+    total_rating = serializers.SerializerMethodField()
+    taste_rating = serializers.SerializerMethodField()
+    atmosphere_rating = serializers.SerializerMethodField()
+    kindness_rating = serializers.SerializerMethodField()
+    clean_rating = serializers.SerializerMethodField()
+    parking_rating = serializers.SerializerMethodField()
+    restroom_rating = serializers.SerializerMethodField()
+
     is_owner = serializers.SerializerMethodField()
     photos = PhotoSerializer(many=True, read_only=True)
     is_liked = serializers.SerializerMethodField()
@@ -180,8 +319,26 @@ class StoreDetailSerializer(ModelSerializer):
         model = Store
         fields = "__all__"
 
-    def get_rating(self, store):
-        return store.rating()
+    def get_total_rating(self, store):
+        return store.total_rate()
+
+    def get_taste_rating(self, store):
+        return store.taste_rate()
+    
+    def get_atmosphere_rating(self, store):
+        return store.atmosphere_rate()
+    
+    def get_kindness_rating(self, store):
+        return store.kindness_rate()
+    
+    def get_clean_rating(self, store):
+        return store.clean_rate()
+    
+    def get_parking_rating(self, store):
+        return store.parking_rate()
+    
+    def get_restroom_rating(self, store):
+        return store.restroom_rate()
 
     def get_is_owner(self, store):
         request = self.context.get("request")

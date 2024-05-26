@@ -46,6 +46,7 @@ class Bookings(APIView):
         else:
             return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
+    # delete
 
 class BookingDetail(APIView):
 

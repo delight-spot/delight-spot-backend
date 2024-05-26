@@ -1,8 +1,4 @@
-from django.db import transaction
 from django.conf import settings
-from django.utils import timezone
-from django.http	import JsonResponse
-from django.contrib.auth.models import AnonymousUser
 
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView
@@ -27,10 +23,11 @@ class SellingList(APIView):
     def post(self, request):
         serializer = SellingListSerializer(data=request.data)
         if serializer.is_valid():
-            new_amenities = serializer.save()
-            return Response(SellingListSerializer(new_amenities).data)
+            new_selling = serializer.save()
+            return Response(SellingListSerializer(new_selling).data)
         else:
             return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
 
 class SellingListDetail(APIView):
 
@@ -86,15 +83,16 @@ class SellingListView(APIView):
         store = self.get_object(pk)
         serializer = SellingListSerializer(store.sell_list.all()[start:end], many=True)
         return Response(serializer.data)
+    
+    # post 생성
 
 class Stores(APIView):
-    
-    # def get(self, request):
-    #     return JsonResponse({"Hello":"World"}, status=200)
     
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request):
+        print(request.GET.get('type')) #None이면 전체, 음식점, 카페, 기타
+
         all_store = Store.objects.all()
         serializer = StoreListSerializer(all_store, many=True, context={'request': request})
         print(Response(serializer.data))
