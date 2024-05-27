@@ -6,5 +6,4 @@ from .models import Photo
 class PhotoAdmin(admin.ModelAdmin):
     list_display = (
         "store",
-        "description",
     )

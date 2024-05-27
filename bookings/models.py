@@ -5,9 +5,6 @@ from django.conf import settings
 
 class Booking(CommonModel):
     """Booking Model Definition"""
-    name = models.CharField(
-        max_length=150,
-    )
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -22,4 +19,4 @@ class Booking(CommonModel):
     )
 
     def __str__(self):
-        return self.name
+        return f"{self.user}: {self.store}"

@@ -4,9 +4,6 @@ from common.models import CommonModel
 
 class Photo(CommonModel):
     file = models.URLField()
-    description = models.CharField(
-        max_length=140,
-    )
     store = models.ForeignKey(
         "stores.Store",
         null=True,

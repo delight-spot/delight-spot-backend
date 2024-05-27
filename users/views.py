@@ -72,10 +72,20 @@ class UserReviews(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request, username):
+
+        try:
+            page = request.query_params.get("page", 1) # page를 찾을 수 없다면 1 page
+            page = int(page)
+        except ValueError:
+            page = 1
+
+        page_size = settings.PAGE_SIZE
+        start = (page - 1) * page_size
+        end = start + page_size
+
         all_reviews = Reviews.objects.filter(user__username=username)
-        print(all_reviews)
         serializer = ReviewSerializer(
-            all_reviews,
+            all_reviews.all()[start:end],
             many=True,
             context={"request": request},
         )
@@ -93,6 +103,7 @@ class UserReviewDetail(APIView):
             raise NotFound
 
     def get(self, request, pk, username):  # username 인자 추가
+        
         review = self.get_list(pk, request.user)
         serializer = ReviewSerializer(review, context={"request": request})
         return Response(serializer.data)
@@ -119,9 +130,20 @@ class UserStore(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request, username):
+
+        try:
+            page = request.query_params.get("page", 1) # page를 찾을 수 없다면 1 page
+            page = int(page)
+        except ValueError:
+            page = 1
+
+        page_size = settings.PAGE_SIZE
+        start = (page - 1) * page_size
+        end = start + page_size
+
         all_stores = Store.objects.filter(owner__username=username)
         serializer = StoreDetailSerializer(
-            all_stores,
+            all_stores.all()[start:end],
             many=True,
             context={"request": request},
         )

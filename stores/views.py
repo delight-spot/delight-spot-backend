@@ -91,11 +91,37 @@ class Stores(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request):
-        print(request.GET.get('type')) #None이면 전체, 음식점, 카페, 기타
+        try:
+            page = request.query_params.get("page", 1) # page를 찾을 수 없다면 1 page
+            page = int(page)
+        except ValueError:
+            page = 1
 
-        all_store = Store.objects.all()
-        serializer = StoreListSerializer(all_store, many=True, context={'request': request})
-        print(Response(serializer.data))
+        page_size = settings.PAGE_SIZE
+        start = (page - 1) * page_size
+        end = start + page_size
+
+        # all_store = Store.objects.all()
+
+        # 검색 처리
+        # keyword = request.query_params.get('keyword')
+        keyword = request.GET.get('keyword')
+        if keyword:
+            all_store = Store.objects.filter(name__icontains=keyword)
+        else:
+            all_store = Store.objects.all()
+
+
+        # 필터링 처리
+        # store_type = request.query_params.get('type')
+        store_type = request.GET.get('type')
+        print(store_type)
+        # food, cafe, ect
+        if store_type:
+            all_store = all_store.filter(kind_menu=store_type)
+        
+
+        serializer = SellingListSerializer(all_store.all()[start:end], many=True, context={'request': request})
         return Response(serializer.data)
     
     def post(self, request):
@@ -188,7 +214,7 @@ class StoreReviews(APIView):
             serializer = ReviewSerializer(review)
             return Response(serializer.data)
 
-class StorePhotos(APIView):
+class StorePhotosToggle(APIView):
 
     permission_classes = [IsAuthenticatedOrReadOnly]
 

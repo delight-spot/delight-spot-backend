@@ -12,6 +12,7 @@ class Group(CommonModel):
         on_delete=models.CASCADE,
         related_name="my_groups",
     )
+
     def __str__(self):
         return self.name
 

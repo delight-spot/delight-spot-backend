@@ -1,9 +1,8 @@
 from rest_framework.serializers import ModelSerializer
 from .models import Group, SharedList
 from users.serializer import TinyUserSerializer
-from stores.serializer import StoreSerializer
+from stores.serializer import GroupStoreList
 from rest_framework import serializers
-
 
 class GroupSerializer(ModelSerializer):
     members = TinyUserSerializer(many=True, read_only=True)
@@ -33,9 +32,11 @@ class GroupDetailSerializer(ModelSerializer):
     
     def get_store(self, obj):
         shared_lists = SharedList.objects.filter(group=obj)
-        store_names = [store.name for store_list in shared_lists for store in store_list.store.all()]
-        return store_names
-
+        # store_names = [store.name for store_list in shared_lists for store in store_list.store.all()]
+        # return store_names
+        stores = [GroupStoreList(store_list.store.all(), many=True).data for store_list in shared_lists]
+        return stores
+    
     class Meta:
         model = Group
         fields = ("pk", "name", "members", "owner", "store", "updated_at")

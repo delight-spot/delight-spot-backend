@@ -5,9 +5,9 @@ from django.conf import settings
 class Store(CommonModel):
 
     class StoreMenuChoices(models.TextChoices):
-        FOOD = ("음식", "음식")
-        CAFE = ("카페", "카페")
-        ECT = ("기타", "기탄")
+        FOOD = ("food", "음식")
+        CAFE = ("cafe", "카페")
+        ECT = ("ect", "기타")
 
     name = models.CharField(max_length=200, default="")
     description = models.TextField()
