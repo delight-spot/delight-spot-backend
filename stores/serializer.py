@@ -8,12 +8,7 @@ from bookings.models import Booking
 class SellingListSerializer(ModelSerializer):
     class Meta:
         model = SellList
-        fields = (
-            "pk",
-            "name",
-            "description",
-            "created_at"
-        )
+        fields = "__all__"
 
 # bookings 전체 조회
 class StoreSerializer(ModelSerializer):
