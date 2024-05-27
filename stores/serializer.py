@@ -143,12 +143,12 @@ class ListSerializer(ModelSerializer):
 class StoreListSerializer(ModelSerializer):
 
     total_rating = serializers.SerializerMethodField()
-    taste_rating = serializers.SerializerMethodField()
-    atmosphere_rating = serializers.SerializerMethodField()
-    kindness_rating = serializers.SerializerMethodField()
-    clean_rating = serializers.SerializerMethodField()
-    parking_rating = serializers.SerializerMethodField()
-    restroom_rating = serializers.SerializerMethodField()
+    # taste_rating = serializers.SerializerMethodField()
+    # atmosphere_rating = serializers.SerializerMethodField()
+    # kindness_rating = serializers.SerializerMethodField()
+    # clean_rating = serializers.SerializerMethodField()
+    # parking_rating = serializers.SerializerMethodField()
+    # restroom_rating = serializers.SerializerMethodField()
 
 
     reviews_len = serializers.SerializerMethodField()
@@ -166,23 +166,23 @@ class StoreListSerializer(ModelSerializer):
     def get_total_rating(self, store):
         return store.total_rate()
 
-    def get_taste_rating(self, store):
-        return store.taste_rate()
+    # def get_taste_rating(self, store):
+    #     return store.taste_rate()
     
-    def get_atmosphere_rating(self, store):
-        return store.atmosphere_rate()
+    # def get_atmosphere_rating(self, store):
+    #     return store.atmosphere_rate()
     
-    def get_kindness_rating(self, store):
-        return store.kindness_rate()
+    # def get_kindness_rating(self, store):
+    #     return store.kindness_rate()
     
-    def get_clean_rating(self, store):
-        return store.clean_rate()
+    # def get_clean_rating(self, store):
+    #     return store.clean_rate()
     
-    def get_parking_rating(self, store):
-        return store.parking_rate()
+    # def get_parking_rating(self, store):
+    #     return store.parking_rate()
     
-    def get_restroom_rating(self, store):
-        return store.restroom_rate()
+    # def get_restroom_rating(self, store):
+    #     return store.restroom_rate()
     
 
     def get_reviews_len(self, store):
@@ -212,12 +212,12 @@ class StoreListSerializer(ModelSerializer):
             "reviews_len",
 
             "total_rating",
-            "taste_rating",
-            "atmosphere_rating",
-            "kindness_rating",
-            "clean_rating",
-            "parking_rating",
-            "restroom_rating",
+            # "taste_rating",
+            # "atmosphere_rating",
+            # "kindness_rating",
+            # "clean_rating",
+            # "parking_rating",
+            # "restroom_rating",
 
             "is_owner",
             "user_name",

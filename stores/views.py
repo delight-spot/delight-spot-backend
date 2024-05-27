@@ -101,27 +101,21 @@ class Stores(APIView):
         start = (page - 1) * page_size
         end = start + page_size
 
-        # all_store = Store.objects.all()
+        all_store = Store.objects.all()
 
-        # 검색 처리
-        # keyword = request.query_params.get('keyword')
+        # 검색 처리 :keyword = request.query_params.get('keyword')
         keyword = request.GET.get('keyword')
         if keyword:
             all_store = Store.objects.filter(name__icontains=keyword)
-        else:
-            all_store = Store.objects.all()
 
-
-        # 필터링 처리
-        # store_type = request.query_params.get('type')
+        # 필터링 처리 :store_type = request.query_params.get('type')
         store_type = request.GET.get('type')
         print(store_type)
-        # food, cafe, ect
         if store_type:
             all_store = all_store.filter(kind_menu=store_type)
         
 
-        serializer = SellingListSerializer(all_store.all()[start:end], many=True, context={'request': request})
+        serializer = StoreListSerializer(all_store.all()[start:end], many=True, context={'request': request})
         return Response(serializer.data)
     
     def post(self, request):
