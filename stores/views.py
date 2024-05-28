@@ -1,15 +1,17 @@
 from django.conf import settings
+from django.db.models import Count, Avg, F, Q
 
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.exceptions import NotFound,PermissionDenied
+from rest_framework.exceptions import NotFound,PermissionDenied,ParseError
 from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST
 
 from .serializer import StoreListSerializer, SellingListSerializer, StoreDetailSerializer, StorePostSerializer
 from .models import Store, SellList
 from reviews.serializers import ReviewSerializer
 from medias.serializer import PhotoSerializer
+from reviews.models import Reviews
 
 class SellingList(APIView):
 
@@ -104,18 +106,60 @@ class Stores(APIView):
         all_store = Store.objects.all()
 
         # 검색 처리 :keyword = request.query_params.get('keyword')
-        keyword = request.GET.get('keyword')
-        if keyword:
-            all_store = Store.objects.filter(name__icontains=keyword)
-
-        # 필터링 처리 :store_type = request.query_params.get('type')
-        store_type = request.GET.get('type')
-        print(store_type)
-        if store_type:
-            all_store = all_store.filter(kind_menu=store_type)
+        keyword = request.query_params.get('keyword')
+        try:
+            if keyword:
+                all_store = all_store.filter(name__icontains=keyword)
+        except ValueError:
+            raise ParseError(detail="Invalid 'keyword' parameter value.")
         
+        # 필터링 처리 :store_type = request.query_params.get('type')
+        store_types = request.query_params.getlist('type')
+        filter_conditions = Q()
+        annotate_conditions = {}
 
-        serializer = StoreListSerializer(all_store.all()[start:end], many=True, context={'request': request})
+        for store_type in store_types:
+            if store_type == 'cafe':
+                filter_conditions &= Q(kind_menu='cafe')
+            elif store_type == 'food':
+                filter_conditions &= Q(kind_menu='food')
+            elif store_type == 'rate':
+        # QuerySet에서는 모델의 메서드를 직접 정렬 기준으로 사용할 수 없어 annotate()를 사용하여 각 스토어의 평균 평점을 계산하고 이를 기준으로 정렬
+                annotate_conditions['avg_rating'] = Avg(
+                    F('reviews__taste_rating') +
+                    F('reviews__atmosphere_rating') +
+                    F('reviews__kindness_rating') +
+                    F('reviews__clean_rating') +
+                    F('reviews__parking_rating') +
+                    F('reviews__restroom_rating')
+                ) / 6.0
+            elif store_type == 'reviews':
+                annotate_conditions['review_count'] = Count('reviews')
+        
+        # 필터 조건 적용
+        if filter_conditions:
+            all_store = all_store.filter(filter_conditions)
+
+        # annotate 조건 적용 및 정렬
+        if 'avg_rating' in annotate_conditions and 'review_count' in annotate_conditions:
+            all_store = all_store.annotate(**annotate_conditions).order_by('-avg_rating')
+            # review_count를 기준으로 내림차순 정렬하고, 그 다음으로 avg_rating을 기준으로 내림차순 정렬
+        elif 'avg_rating' in annotate_conditions:
+            all_store = all_store.annotate(**annotate_conditions).order_by('-avg_rating')
+            # annotate_conditions에 'avg_rating'만 존재하는 경우, avg_rating을 기준으로 내림차순 정렬
+        elif 'review_count' in annotate_conditions:
+            all_store = all_store.annotate(**annotate_conditions).order_by('-review_count')
+
+        total_count = all_store.count()
+        if start >= total_count:
+            page = 1
+            start = (page - 1) * page_size
+            end = start + page_size
+
+        if not all_store.exists():
+            all_store = Store.objects.all()
+
+        serializer = StoreListSerializer(all_store[start:end], many=True, context={'request': request})
         return Response(serializer.data)
     
     def post(self, request):

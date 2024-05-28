@@ -29,6 +29,11 @@ class Store(CommonModel):
     def __str__(self):
         return self.name
 
+    def reviews_len(store):
+        count = store.reviews.count()
+        if count == 0:
+            return 0
+        return count
 
     def total_rate(store):
         count = store.reviews.count()
@@ -136,12 +141,6 @@ class Store(CommonModel):
                 return round(total_rating / valid_ratings, 1)
             else:
                 return "No Valid Ratings"
-        
-    def reviews_len(store):
-        count = store.reviews.count()
-        if count == 0:
-            return 0
-        return count
         
     class Meta:
         verbose_name_plural = "Store"

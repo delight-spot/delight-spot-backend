@@ -8,7 +8,12 @@ from bookings.models import Booking
 class SellingListSerializer(ModelSerializer):
     class Meta:
         model = SellList
-        fields = "__all__"
+        fields = (
+            "pk",
+            "name",
+            "description",
+            "created_at"
+        )
 
 # bookings 전체 조회
 class StoreSerializer(ModelSerializer):
@@ -320,7 +325,7 @@ class BookingStoreList(ModelSerializer):
     is_liked = serializers.SerializerMethodField()
     class Meta:
         model = Store
-        fields = ("pk", "name", "photos", "is_liked", "created_at")
+        fields = ("pk", "name", "total_rate", "photos", "is_liked", "created_at")
 
     def get_is_liked(self, store):
         request = self.context.get('request')
