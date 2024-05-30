@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import os
 import environ
+from datetime import timedelta
 # import dj_database_url
 
 env = environ.Env()
@@ -42,6 +43,7 @@ THIRD_PARTY_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     # "corsheaders",
+    'rest_framework_simplejwt',
 ]
 
 CUSTOM_APPS = [
@@ -163,6 +165,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = "users.User"
+# USERNAME_FIELD = 'email'  # email을 기본 로그인 필드로 설정
 
 PAGE_SIZE = 10
 
@@ -170,8 +173,21 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework.authentication.TokenAuthentication",
+        "config.authentication.JWTAuthentication",
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
+}
 
+REST_USE_JWT = True
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=2), # access token이 유효한 기간
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7), # refresh token이 유효한 기간
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'TOKEN_USER_CLASS': 'user.User',
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
 }
 
 # CORS_ALLOWED_ORIGINS = [

@@ -1,5 +1,7 @@
 from django.conf import settings
-from django.contrib.auth import login, authenticate, logout
+import jwt
+from django.contrib.auth import login, authenticate, logout, get_user_model
+from django.contrib.auth.hashers import make_password
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -7,15 +9,20 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.exceptions import ParseError, NotFound
 from rest_framework.status import HTTP_200_OK, HTTP_204_NO_CONTENT
+from rest_framework_simplejwt.tokens import RefreshToken
 
-from requests
+import requests
+from .serializer import UserSerializer # RegisterSerializer, 
 from .models import User
 from reviews.models import Reviews
 from reviews.serializers import ReviewSerializer
 from stores.models import Store
 from stores.serializer import StoreDetailSerializer
-
 from .serializer import PrivateUserSerializer
+import os
+import environ
+from pathlib import Path
+
 
 
 class Me(APIView):
@@ -234,6 +241,51 @@ class LogOut(APIView):
         return Response({"ok": "bye"})
 
 
+env = environ.Env()
+BASE_DIR = Path(__file__).resolve().parent.parent
+environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
+
+class JWTLogIn(APIView):
+
+    def post(self, request):
+        username = request.data.get("username")
+        password = request.data.get("password")
+        if not username or not password:
+            raise ParseError
+
+        user = authenticate(
+            request,
+            username=username,
+            password=password,
+        )
+        if user:
+            token = jwt.encode(
+                {"pk": user.pk},
+                env("SECRET_KEY"),
+                algorithm="HS256",
+            )
+            return Response({"token": token})
+        else:
+            return Response({"error": "wrong password"})
+
+
+class JWTSignup(APIView):
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            if User.objects.filter(email=request.data['email']).exists():
+                return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
+            user = serializer.save()
+            
+            # JWT 토큰 생성
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
 class KakaoLogin(APIView):
     def post(self, request):
         try:
@@ -249,9 +301,9 @@ class KakaoLogin(APIView):
                 },
             )
             print(access_token.json(), "\n")
-            # 서버가 인가 코드 받기 요청 -> 사용자에게 카카오계정 로그인 요청 -> 사용자가 로그인 -> 동의화면 -> Redirect URI로 인가 코드 전달
-            # 토큰 발급
-            # 
+            # 서버가 카카오 서버로 인가 코드 받기 요청 -> 사용자에게 카카오계정 로그인 요청 -> 사용자가 로그인 -> 동의화면 -> Redirect URI로 인가 코드 전달
+            # 서버가 Redirect URI로 전달받은 인가 코드로 토큰 받기 요청 -> 카카오가 토큰 발급해 서버에 전달
+            # 발급받은 액세스 토큰으로 사용자 정보 가져오기를 요청해 사용자의 회원번호 및 정보를 조회해 서비스 회원인지 확인
 
             access_token = access_token.json().get("access_token")
             user_data = requests.get(
@@ -267,6 +319,7 @@ class KakaoLogin(APIView):
             kakao_account = user_data.get("kakao_account")
             profile = kakao_account.get("profile")
             print(profile)
+
             try:
                 user = User.objects.get(username=profile.get("nickname"))
                 login(request, user)
@@ -281,5 +334,6 @@ class KakaoLogin(APIView):
                 user.save()
                 login(request, user)
                 return Response(status=status.HTTP_200_OK)
-        except Exception:
+        except Exception as e:
+            print(e)
             return Response(status=status.HTTP_400_BAD_REQUEST)
