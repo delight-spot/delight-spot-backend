@@ -38,7 +38,7 @@ class Bookings(APIView):
         for booking in user_bookings:
             store_ids.extend(booking.store.values_list('id', flat=True))
 
-        # 상점 쿼리셋을 구성합니다.
+        # 상점 쿼리셋을 구성
         store_queryset = Store.objects.filter(id__in=store_ids)
 
         # 필터링 처리

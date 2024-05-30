@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from rest_framework.exceptions import ParseError, NotFound
 from rest_framework.status import HTTP_200_OK, HTTP_204_NO_CONTENT
 
+from requests
 from .models import User
 from reviews.models import Reviews
 from reviews.serializers import ReviewSerializer
@@ -233,77 +234,52 @@ class LogOut(APIView):
         return Response({"ok": "bye"})
 
 
-# class KakaoLogin(APIView):
-#     def post(self, request):
-#         try:
-#             code = request.data.get("code")
-#             access_token = requests.post(
-#                 "https://kauth.kakao.com/oauth/token",
-#                 headers={"Content-Type": "application/x-www-form-urlencoded"},
-#                 data={
-#                     "grant_type": "authorization_code",
-#                     "client_id": "2a7311e4d93424f2afe213fdd938125b",
-#                     "redirect_uri": "http://127.0.0.1:3000/social/kakao",
-#                     "code": code,
-#                 },
-#             )
-#             print(access_token.json(), "\n")
+class KakaoLogin(APIView):
+    def post(self, request):
+        try:
+            code = request.data.get("code")
+            access_token = requests.post(
+                "https://kauth.kakao.com/oauth/token",
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                data={
+                    "grant_type": "authorization_code",
+                    "client_id": "583f1ebb47209c90313ca9808363f605",
+                    "redirect_uri": "http://127.0.0.1:3000/social/kakao",
+                    "code": code,
+                },
+            )
+            print(access_token.json(), "\n")
+            # 서버가 인가 코드 받기 요청 -> 사용자에게 카카오계정 로그인 요청 -> 사용자가 로그인 -> 동의화면 -> Redirect URI로 인가 코드 전달
+            # 토큰 발급
+            # 
 
-#             access_token = access_token.json().get("access_token")
-#             user_data = requests.get(
-#                 "https://kapi.kakao.com/v2/user/me",
-#                 headers={
-#                     "Authorization": f"Bearer {access_token}",
-#                     "Content-type": "application/x-www-form-urlencoded;charset=utf-8",
-#                 },
-#             )
-#             user_data = user_data.json()
-#             print(user_data, "\n")
+            access_token = access_token.json().get("access_token")
+            user_data = requests.get(
+                "https://kapi.kakao.com/v2/user/me",
+                headers={
+                    "Authorization": f"Bearer {access_token}",
+                    "Content-type": "application/x-www-form-urlencoded;charset=utf-8",
+                },
+            )
+            user_data = user_data.json()
+            print(user_data, "\n")
 
-#             kakao_account = user_data.get("kakao_account")
-#             profile = kakao_account.get("profile")
-#             print(profile)
-#             try:
-#                 user = User.objects.get(username=profile.get("nickname"))
-#                 login(request, user)
-#                 return Response(status=status.HTTP_200_OK)
-#             except User.DoesNotExist:
-#                 user = User.objects.create(
-#                     username=profile.get("nickname"),
-#                     name=profile.get("nickname"),
-#                     avatar=profile.get("profile_image_url"),
-#                 )
-#                 user.set_unusable_password()  # 이 유저는 password로 로근인을 할 수 없기 때문에 설정 / .has_usable_password
-#                 user.save()
-#                 login(request, user)
-#                 return Response(status=status.HTTP_200_OK)
-#         except Exception:
-#             return Response(status=status.HTTP_400_BAD_REQUEST)
-
-
-# class SignUp(APIView):
-#     def post(self, request):
-#         try:
-#             name = request.data.get("name")
-#             email = request.data.get("email")
-#             username = request.data.get("username")
-#             password = request.data.get("password")
-#             if User.objects.filter(username=username):
-#                 return Response(
-#                     {
-#                         "Failed": "The username is already used. Please use another username."
-#                     },
-#                     status=status.HTTP_400_BAD_REQUEST,
-#                 )
-#             if User.objects.filter(email=email):
-#                 return Response(
-#                     {"Failed": "The email is already used. Please use another email."},
-#                     status=status.HTTP_400_BAD_REQUEST,
-#                 )
-#             user = User.objects.create(username=username, name=name, email=email)
-#             user.set_password(password)
-#             user.save()
-#             login(request, user)
-#             return Response(status=status.HTTP_200_OK)
-#         except Exception as e:
-#             return Response({"Failed": f"{e}"}, status=status.HTTP_400_BAD_REQUEST)
+            kakao_account = user_data.get("kakao_account")
+            profile = kakao_account.get("profile")
+            print(profile)
+            try:
+                user = User.objects.get(username=profile.get("nickname"))
+                login(request, user)
+                return Response(status=status.HTTP_200_OK)
+            except User.DoesNotExist:
+                user = User.objects.create(
+                    username=profile.get("nickname"),
+                    name=profile.get("nickname"),
+                    avatar=profile.get("profile_image_url"),
+                )
+                user.set_unusable_password()  # 이 유저는 password로 로근인을 할 수 없기 때문에 설정 / .has_usable_password
+                user.save()
+                login(request, user)
+                return Response(status=status.HTTP_200_OK)
+        except Exception:
+            return Response(status=status.HTTP_400_BAD_REQUEST)

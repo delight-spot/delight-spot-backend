@@ -1,13 +1,16 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_201_CREATED, HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_403_FORBIDDEN
+from rest_framework.exceptions import NotFound,PermissionDenied, ParseError
+from django.conf import settings
+from django.db.models import Q
+from django.utils.functional import SimpleLazyObject
+
 from .models import Group, SharedList
 from stores.models import Store
 from users.models import User
 from .serializers import GroupSerializer, MakeGroupSerializer, GroupDetailSerializer
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_201_CREATED, HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_403_FORBIDDEN
-from rest_framework.exceptions import NotFound,PermissionDenied
-from django.conf import settings
 
 
 class GroupList(APIView):
@@ -16,7 +19,7 @@ class GroupList(APIView):
 
     def get(self, request):
         try:
-            page = request.query_params.get("page", 1) # page를 찾을 수 없다면 1 page
+            page = request.query_params.get("page", 1)
             page = int(page)
         except ValueError:
             page = 1
@@ -24,16 +27,39 @@ class GroupList(APIView):
         page_size = settings.PAGE_SIZE
         start = (page - 1) * page_size
         end = start + page_size
-        
-        # request.user와 동일한 유저가 가지고 있는 booking
-        all_group = Group.objects.all()
-        serializer = GroupSerializer(all_group.all()[start:end], many=True, context={"request": request})
-        return Response(serializer.data)  
+
+        # Q 객체는 Django의 ORM에서 복잡한 쿼리를 작성할 때 사용하는 도구, AND 및 OR 연산자를 사용하여 필터 조건을 결합 가능
+        user_groups = Group.objects.filter(Q(owner=request.user) | Q(members=request.user)).distinct()
+
+        keyword = request.query_params.get('keyword')
+        try:
+            if keyword:
+                user_groups = Group.objects.filter(Q(owner=request.user) | Q(members=request.user) & Q(name__icontains=keyword)).distinct()
+        except ValueError:
+            raise ParseError(detail="Invalid 'keyword' parameter value.")
+
+        # 검색 결과가 없을 경우 전체 예약된 상점 목록으로 다시 설정
+        if not user_groups.exists():
+            user_groups = Group.objects.filter(Q(owner=request.user) | Q(members=request.user)).distinct()
+            page = 1  # 페이지를 1로 초기화
+            start = (page - 1) * page_size
+            end = start + page_size
+
+        total_count = user_groups.count()
+        if start >= total_count:
+            page = 1
+            start = (page - 1) * page_size
+            end = start + page_size
+
+        paginated_groups = user_groups[start:end]
+
+        serializer = GroupDetailSerializer(paginated_groups, many=True, context={"request": request})
+        return Response(serializer.data)
 
     def post(self, request):
-        serializer = MakeGroupSerializer(data=request.data)
+        serializer = MakeGroupSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            group = serializer.save(user=request.user)
+            group = serializer.save()  # owner는 create 메소드 내에서 처리됩니다.
             serializer = MakeGroupSerializer(group)
             return Response(serializer.data)
         else:
@@ -41,22 +67,31 @@ class GroupList(APIView):
         
 
 class GroupDetail(APIView):
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticated]
     
-    def get_object(self, pk):
+    def get_object(self, user, pk):
         try:
-            return Group.objects.get(pk=pk)
+            group = Group.objects.get(pk=pk)
+            if group.owner != user and user not in group.members.all():
+                raise PermissionDenied("You do not have permission to access this group.")
+            return group
         except Group.DoesNotExist:
             raise NotFound
 
     def get(self, request, pk):
-        group = self.get_object(pk)
+        user = request.user
+        if isinstance(user, SimpleLazyObject):
+            user = User.objects.get(pk=user.pk)
+        group = self.get_object(user, pk)
         serializer = GroupDetailSerializer(group, context={'request': request})
         return Response(serializer.data)
     
     def delete(self, request, pk):
-        group = self.get_object(pk)
-        if group.owner != request.user:
+        user = request.user
+        if isinstance(user, SimpleLazyObject):
+            user = User.objects.get(pk=user.pk)
+        group = self.get_object(user, pk)
+        if group.owner != user:
             raise PermissionDenied
         group.delete()
         return Response(status=HTTP_204_NO_CONTENT)
