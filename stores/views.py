@@ -4,8 +4,9 @@ from django.db.models import Count, Avg, F, Q
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.exceptions import NotFound,PermissionDenied,ParseError
-from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST
+from rest_framework.exceptions import NotFound,PermissionDenied,ParseError, ValidationError
+from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST, HTTP_201_CREATED, HTTP_200_OK
+from django.shortcuts import get_object_or_404
 
 from .serializer import StoreListSerializer, SellingListSerializer, StoreDetailSerializer, StorePostSerializer
 from .models import Store, SellList
@@ -86,7 +87,33 @@ class SellingListView(APIView):
         serializer = SellingListSerializer(store.sell_list.all()[start:end], many=True)
         return Response(serializer.data)
     
-    # post 생성
+
+    def post(self, request, pk):
+        store = self.get_object(pk)
+        sell_list_serializer = SellingListSerializer(data=request.data)
+        if sell_list_serializer.is_valid():
+            sell_list_serializer.save()
+            store.sell_list.add(sell_list_serializer.instance)
+            return Response(sell_list_serializer.data, status=HTTP_201_CREATED)
+        else:
+            return Response(sell_list_serializer.errors, status=HTTP_400_BAD_REQUEST)
+        
+    # def put(self, request, pk):
+    #     store = self.get_object(pk)
+    #     sell_list_pk = request.data.get('pk')
+
+    #     if not sell_list_pk:
+    #         return Response({'error': 'pk is required for update.'}, status=HTTP_400_BAD_REQUEST)
+
+    #     # Check if sell_list_pk is a list
+    #     if not isinstance(sell_list_pk, list):
+    #         sell_list_pk = [sell_list_pk]
+
+    #     for pk in sell_list_pk:
+    #         sell_list_instance = get_object_or_404(SellList, pk=pk)
+    #         store.sell_list.add(sell_list_instance)
+
+    #     return Response({'message': 'SellList(s) added to Store successfully.'}, status=HTTP_200_OK)
 
 class Stores(APIView):
     
@@ -199,7 +226,7 @@ class StoresDetail(APIView):
         store = self.get_object(pk)
         serializer = StoreDetailSerializer(store, context={'request': request})
         return Response(serializer.data)
-    
+
     def put(self, request, pk):
         store = self.get_object(pk)
         if store.owner != request.user:

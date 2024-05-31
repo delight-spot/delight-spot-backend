@@ -267,7 +267,7 @@ class StorePostSerializer(ModelSerializer):
 class StoreDetailSerializer(ModelSerializer):
     
     owner = TinyUserSerializer(read_only=True)
-    sell_list = SellingListSerializer(read_only=True, many=True)
+    sell_list = SellingListSerializer(many=True)
     
     total_rating = serializers.SerializerMethodField()
     taste_rating = serializers.SerializerMethodField()
