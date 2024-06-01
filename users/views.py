@@ -92,6 +92,8 @@ class UserReviews(APIView):
         end = start + page_size
 
         all_reviews = Reviews.objects.filter(user__username=username)
+
+        
         serializer = ReviewSerializer(
             all_reviews.all()[start:end],
             many=True,

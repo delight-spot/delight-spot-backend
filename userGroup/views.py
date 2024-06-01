@@ -45,11 +45,11 @@ class GroupList(APIView):
             start = (page - 1) * page_size
             end = start + page_size
 
-        total_count = user_groups.count()
-        if start >= total_count:
-            page = 1
-            start = (page - 1) * page_size
-            end = start + page_size
+        # total_count = user_groups.count()
+        # if start >= total_count:
+        #     page = 1
+        #     start = (page - 1) * page_size
+        #     end = start + page_size
 
         paginated_groups = user_groups[start:end]
 

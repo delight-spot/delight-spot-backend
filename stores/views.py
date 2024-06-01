@@ -97,23 +97,6 @@ class SellingListView(APIView):
             return Response(sell_list_serializer.data, status=HTTP_201_CREATED)
         else:
             return Response(sell_list_serializer.errors, status=HTTP_400_BAD_REQUEST)
-        
-    # def put(self, request, pk):
-    #     store = self.get_object(pk)
-    #     sell_list_pk = request.data.get('pk')
-
-    #     if not sell_list_pk:
-    #         return Response({'error': 'pk is required for update.'}, status=HTTP_400_BAD_REQUEST)
-
-    #     # Check if sell_list_pk is a list
-    #     if not isinstance(sell_list_pk, list):
-    #         sell_list_pk = [sell_list_pk]
-
-    #     for pk in sell_list_pk:
-    #         sell_list_instance = get_object_or_404(SellList, pk=pk)
-    #         store.sell_list.add(sell_list_instance)
-
-    #     return Response({'message': 'SellList(s) added to Store successfully.'}, status=HTTP_200_OK)
 
 class Stores(APIView):
     
@@ -141,7 +124,14 @@ class Stores(APIView):
             raise ParseError(detail="Invalid 'keyword' parameter value.")
         
         # 필터링 처리 :store_type = request.query_params.get('type')
+        # store_types = request.query_params.getlist('type')
+        # 필터링 처리
         store_types = request.query_params.getlist('type')
+        valid_types = ['cafe', 'food', 'rate', 'reviews']  # 유효한 type 값들
+        # 요청받은 type 값들 중 유효하지 않은 값이 있다면 빈 리스트 반환
+        if not all(store_type in valid_types for store_type in store_types):
+            return Response([])  # 잘못된 type 값이 있을 경우 빈 리스트 반환
+
         filter_conditions = Q()
         annotate_conditions = {}
 
@@ -162,7 +152,7 @@ class Stores(APIView):
                 ) / 6.0
             elif store_type == 'reviews':
                 annotate_conditions['review_count'] = Count('reviews')
-        
+            
         # 필터 조건 적용
         if filter_conditions:
             all_store = all_store.filter(filter_conditions)
@@ -176,15 +166,6 @@ class Stores(APIView):
             # annotate_conditions에 'avg_rating'만 존재하는 경우, avg_rating을 기준으로 내림차순 정렬
         elif 'review_count' in annotate_conditions:
             all_store = all_store.annotate(**annotate_conditions).order_by('-review_count')
-
-        total_count = all_store.count()
-        if start >= total_count:
-            page = 1
-            start = (page - 1) * page_size
-            end = start + page_size
-
-        if not all_store.exists():
-            all_store = Store.objects.all()
 
         serializer = StoreListSerializer(all_store[start:end], many=True, context={'request': request})
         return Response(serializer.data)
