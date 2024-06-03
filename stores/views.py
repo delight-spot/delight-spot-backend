@@ -4,8 +4,8 @@ from django.db.models import Count, Avg, F, Q
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.exceptions import NotFound,PermissionDenied,ParseError, ValidationError
-from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST, HTTP_201_CREATED, HTTP_200_OK
+from rest_framework.exceptions import NotFound,PermissionDenied,ParseError
+from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST, HTTP_201_CREATED
 from django.shortcuts import get_object_or_404
 
 from .serializer import StoreListSerializer, SellingListSerializer, StoreDetailSerializer, StorePostSerializer

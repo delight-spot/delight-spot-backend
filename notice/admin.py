@@ -7,4 +7,5 @@ class NoticeAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "top_fixed",
+        "created_at",
     )
