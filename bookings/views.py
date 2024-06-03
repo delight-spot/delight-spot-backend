@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.exceptions import NotFound, ParseError, PermissionDenied
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK, HTTP_403_FORBIDDEN, HTTP_400_BAD_REQUEST, HTTP_201_CREATED
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK, HTTP_400_BAD_REQUEST
 from django.conf import settings
 from django.db.models import Prefetch #모델을 통해 직접 필터링하는 방식
 
@@ -57,18 +57,11 @@ class Bookings(APIView):
             raise ParseError(detail="Invalid 'type' parameter value.")
         
         # 검색 결과가 없을 경우 전체 예약된 상점 목록으로 다시 설정
-        if not store_queryset.exists():
-            store_queryset = Store.objects.filter(id__in=store_ids)
-            page = 1  # 페이지를 1로 초기화
-            start = (page - 1) * page_size
-            end = start + page_size
-
-        # 페이지네이션 처리
-        total_count = store_queryset.count()
-        if start >= total_count:  # 페이지네이션 범위를 벗어난 경우 초기화
-            page = 1
-            start = (page - 1) * page_size
-            end = start + page_size
+        # if not store_queryset.exists():
+        #     store_queryset = Store.objects.filter(id__in=store_ids)
+        #     page = 1  # 페이지를 1로 초기화
+        #     start = (page - 1) * page_size
+        #     end = start + page_size
 
         paginated_stores = store_queryset[start:end]
 

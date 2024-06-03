@@ -43,25 +43,12 @@ class UserSerializer(serializers.ModelSerializer):
         return user
     
 
-# class UserSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = User
-#         fields = ('email', 'name', 'password')
-#         extra_kwargs = {
-#             'password': {'write_only': True}
-#         }
-
-#     def create(self, validated_data):
-#         user = User(
-#             email=validated_data['email'],
-#             name=validated_data['name']
-#         )
-#         user.set_password(validated_data['password'])
-#         user.save()
-#         return user
-
-# {
-# "email":"jwt@naver.com",
-# "name":"jwt",
-# "password":"1234"
-# }
+class NoticeUser(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            "name",
+            "avatar",
+            "username",
+            "is_host",
+            )

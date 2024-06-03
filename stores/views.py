@@ -12,7 +12,7 @@ from .serializer import StoreListSerializer, SellingListSerializer, StoreDetailS
 from .models import Store, SellList
 from reviews.serializers import ReviewSerializer
 from medias.serializer import PhotoSerializer
-from reviews.models import Reviews
+# from reviews.models import Reviews
 
 class SellingList(APIView):
 

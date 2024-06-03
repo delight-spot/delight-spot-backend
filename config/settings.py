@@ -54,6 +54,7 @@ CUSTOM_APPS = [
     "medias.apps.MediasConfig",
     "bookings.apps.BookingsConfig",
     "userGroup.apps.UsergroupConfig",
+    "notice.apps.NoticeConfig",
 ]
 
 SYSTEM_APPS = [
