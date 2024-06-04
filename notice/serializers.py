@@ -9,6 +9,15 @@ class NoticeSerializer(serializers.ModelSerializer):
         model = Notice
         fields = ('pk', 'name', 'created_at', 'updated_at', 'top_fixed', 'user')
 
+
+class NoticeDetailSerializer(serializers.ModelSerializer):
+    user = NoticeUser(read_only=True)
+
+    class Meta:
+        model = Notice
+        fields = "__all__"
+
+
 class PostNoticeSerializer(serializers.ModelSerializer):
     user = NoticeUser(read_only=True) # 유저 정보를 가져온다 !
 

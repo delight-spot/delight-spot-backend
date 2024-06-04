@@ -3,7 +3,7 @@ from rest_framework.response import Response
 
 from django.conf import settings
 from .models import Notice
-from .serializers import NoticeSerializer, PostNoticeSerializer
+from .serializers import NoticeSerializer, PostNoticeSerializer, NoticeDetailSerializer
 from rest_framework.exceptions import NotFound, ParseError, PermissionDenied
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
@@ -50,3 +50,17 @@ class NoticeViews(APIView):
             serializer.save(user=request.user)
             return Response(serializer.data, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+    
+class NoticeDetail(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    
+    def get_object(self, pk):
+        try:
+            return Notice.objects.get(pk=pk)
+        except Notice.DoesNotExist:
+            raise NotFound
+
+    def get(self, request, pk):
+        store = self.get_object(pk)
+        serializer = NoticeDetailSerializer(store, context={'request': request})
+        return Response(serializer.data)
