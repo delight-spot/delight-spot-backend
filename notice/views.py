@@ -6,7 +6,7 @@ from .models import Notice
 from .serializers import NoticeSerializer, PostNoticeSerializer, NoticeDetailSerializer
 from rest_framework.exceptions import NotFound, ParseError, PermissionDenied
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
+from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
 
 class NoticeViews(APIView):
 
@@ -61,6 +61,24 @@ class NoticeDetail(APIView):
             raise NotFound
 
     def get(self, request, pk):
-        store = self.get_object(pk)
-        serializer = NoticeDetailSerializer(store, context={'request': request})
+        notice = self.get_object(pk)
+        serializer = NoticeDetailSerializer(notice, context={'request': request})
         return Response(serializer.data)
+    
+    def put(self, request, pk):
+        notice = self.get_object(pk)
+        if not request.user.is_host:
+            raise PermissionDenied("You do not have permission to edit this notice.")
+        serializer = NoticeDetailSerializer(notice, data=request.data, partial=True)
+        if serializer.is_valid():
+            update_store = serializer.save()
+            return Response(NoticeDetailSerializer(update_store).data)
+        else:
+            return Response(serializer.errors)
+    
+    def delete(self, request, pk):
+        store = self.get_object(pk)
+        if not request.user.is_host:
+            raise PermissionDenied("You do not have permission to edit this notice.")
+        store.delete()
+        return Response(status=HTTP_204_NO_CONTENT)

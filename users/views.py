@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.exceptions import ParseError, NotFound
-from rest_framework.status import HTTP_200_OK, HTTP_204_NO_CONTENT
+from rest_framework.status import HTTP_200_OK, HTTP_403_FORBIDDEN
 from rest_framework_simplejwt.tokens import RefreshToken
 
 import requests
@@ -34,11 +34,18 @@ class Me(APIView):
 
     def put(self, request):
         user = request.user
+        data = request.data
+        
+        if 'is_host' in data:
+            if not user.is_host:
+                return Response({"detail": "You do not have permission to change 'is_host' field."}, status=HTTP_403_FORBIDDEN)    
+
         serializer = PrivateUserSerializer(
             user,
             data=request.data,
             partial=True,
         )
+
         if serializer.is_valid():
             new_user = serializer.save()
             serializer = PrivateUserSerializer(new_user)
