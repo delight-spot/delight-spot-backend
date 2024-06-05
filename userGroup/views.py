@@ -53,7 +53,7 @@ class GroupList(APIView):
 
         paginated_groups = user_groups[start:end]
 
-        serializer = GroupDetailSerializer(paginated_groups, many=True, context={"request": request})
+        serializer = GroupSerializer(paginated_groups, many=True, context={"request": request})
         return Response(serializer.data)
 
     def post(self, request):
