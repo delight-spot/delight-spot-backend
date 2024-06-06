@@ -127,7 +127,7 @@ class Stores(APIView):
         # store_types = request.query_params.getlist('type')
         # 필터링 처리
         store_types = request.query_params.getlist('type')
-        valid_types = ['cafe', 'food', 'rate', 'reviews']  # 유효한 type 값들
+        valid_types = ['cafe', 'food', 'ect', 'rate', 'reviews']  # 유효한 type 값들
         # 요청받은 type 값들 중 유효하지 않은 값이 있다면 빈 리스트 반환
         if not all(store_type in valid_types for store_type in store_types):
             return Response([])  # 잘못된 type 값이 있을 경우 빈 리스트 반환
@@ -140,6 +140,8 @@ class Stores(APIView):
                 filter_conditions &= Q(kind_menu='cafe')
             elif store_type == 'food':
                 filter_conditions &= Q(kind_menu='food')
+            elif store_type == 'ect':
+                filter_conditions &= Q(kind_menu='ect')
             elif store_type == 'rate':
         # QuerySet에서는 모델의 메서드를 직접 정렬 기준으로 사용할 수 없어 annotate()를 사용하여 각 스토어의 평균 평점을 계산하고 이를 기준으로 정렬
                 annotate_conditions['avg_rating'] = Avg(
