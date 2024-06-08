@@ -106,12 +106,24 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # if DEBUG:
 
+# DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.sqlite3',
+#             'NAME': BASE_DIR / 'db.sqlite3',
+#         }
+# }
+
 DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'delight-spot-db',
+        'USER': 'jth',
+        'PASSWORD': 'jth',
+        'HOST': 'delight-spot-database',  # docker-compose.yml 파일에서 설정한 데이터베이스 서비스 이름
+        'PORT': '3306',
+    }
 }
+
 # else:
 #     DATABASES = {
 #         'default': dj_database_url.config(
