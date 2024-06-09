@@ -120,11 +120,11 @@ class GroupStoreToggle(APIView):
         
     def put(self, request, pk, store_pk):
         group = self.get_group(pk)
-        # Check if the requester is the group owner or a member of the group
+        
         if request.user == group.owner or request.user in group.members.all():
             storelist = self.get_list(group)
             store = self.get_store(store_pk)
-            # Check if the store is already in the list
+            
             if storelist.store.filter(pk=store.pk).exists():
                 storelist.store.remove(store)
                 return Response(status=HTTP_204_NO_CONTENT)
