@@ -10,7 +10,7 @@ from django.utils.functional import SimpleLazyObject
 from .models import Group, SharedList
 from stores.models import Store
 from users.models import User
-from .serializers import GroupSerializer, MakeGroupSerializer, GroupDetailSerializer
+from .serializers import GroupSerializer, MakeGroupSerializer, GroupDetailSerializer, GroupShowListSerializer
 
 
 class GroupList(APIView):
@@ -166,3 +166,12 @@ class GroupUserToggle(APIView):
         else:
             # print(f"Access denied for user: {request.user.username}")  # 디버깅 정보 추가
             return Response({"detail": "이 작업을 수행할 권한(permission)이 없습니다."}, status=HTTP_403_FORBIDDEN)
+        
+
+class GroupShowList(APIView):
+    def get(self, request):
+        all_experience = SharedList.objects.all()
+        serializer = GroupShowListSerializer(
+            all_experience, many=True, context={"request": request}
+        )
+        return Response(serializer.data)

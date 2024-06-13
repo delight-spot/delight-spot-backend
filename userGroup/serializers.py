@@ -45,3 +45,15 @@ class GroupDetailSerializer(ModelSerializer):
     class Meta:
         model = Group
         fields = ("pk", "name", "members", "owner", "store", "updated_at")
+
+class GroupShowListSerializer(ModelSerializer):
+    group_name = serializers.SerializerMethodField()
+    class Meta:
+        model = SharedList
+        fields = "__all__"
+
+    def get_group_name(self, obj):
+        if obj.group:
+            return obj.group.name
+        else:
+            return 'No Group'
