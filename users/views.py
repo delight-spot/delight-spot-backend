@@ -18,7 +18,7 @@ from reviews.models import Reviews
 from reviews.serializers import ReviewSerializer
 from stores.models import Store
 from stores.serializer import StoreDetailSerializer, StoreListSerializer
-from .serializer import PrivateUserSerializer
+from .serializer import PrivateUserSerializer, TinyUserSerializer
 import os
 import environ
 from pathlib import Path
@@ -79,7 +79,7 @@ class PublicUser(APIView):
             user = User.objects.get(username=username)
         except User.DoesNotExist:
             raise NotFound
-        serializer = PrivateUserSerializer(user)
+        serializer = TinyUserSerializer(user)
         return Response(serializer.data)
 
 
@@ -100,7 +100,6 @@ class UserReviews(APIView):
 
         all_reviews = Reviews.objects.filter(user__username=username)
 
-        
         serializer = ReviewSerializer(
             all_reviews.all()[start:end],
             many=True,
@@ -370,7 +369,7 @@ class KakaoLogin(APIView):
             try:
                 user = User.objects.get(username=profile.get("nickname"))
                 login(request, user)
-                return Response(status=status.HTTP_200_OK)
+                return Response(status={"is_member": True})
             except User.DoesNotExist:
                 email = request.data.get("email")  # 이메일 정보를 받아옴
                 if not email:
