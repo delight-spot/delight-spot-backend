@@ -12,7 +12,7 @@ class SellingListSerializer(ModelSerializer):
             "pk",
             "name",
             "description",
-            "created_at"
+            # "created_at"
         )
 
 # bookings 전체 조회
@@ -158,7 +158,6 @@ class StoreListSerializer(ModelSerializer):
 
     reviews_len = serializers.SerializerMethodField()
     is_owner = serializers.SerializerMethodField()
-    sell_list = SellingListSerializer(read_only=True, many=True)
     # 역접근자는 위험하다 -> 방 하나에 수 천, 수 만개의 특성을 가지고 있을 수 있기 때문이다. -> pagination이 있어야 한다.
     photos = PhotoSerializer(many=True, read_only=True)
     is_liked = serializers.SerializerMethodField()
@@ -212,7 +211,6 @@ class StoreListSerializer(ModelSerializer):
             "name",
             "description",
             "kind_menu",
-            "sell_list",
             "city",
             "reviews_len",
 
