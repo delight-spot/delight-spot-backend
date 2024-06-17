@@ -10,7 +10,7 @@ urlpatterns = [
     path("users/kakao", KakaoLogin.as_view()),
     # path("users/token-login", obtain_auth_token),
 
-    path("users", Users.as_view()),
+    # path("users", Users.as_view()),
     path("users/me", Me.as_view()),
     path("users/<str:username>", PublicUser.as_view()),
     
