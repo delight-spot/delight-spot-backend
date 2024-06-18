@@ -340,7 +340,11 @@ class KakaoSignup(APIView):
             user.set_unusable_password()  # 이 유저는 password로 로근인을 할 수 없기 때문에 설정 / .has_usable_password
             user.save()
             login(request, user)
-            return Response(status=status.HTTP_200_OK)
+
+            payload = {'kakao_id': kakao_id}
+            jwt_token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+            print(jwt_token)
+            return Response(status=status.HTTP_200_OK, data={'is_member': True, 'kakao_jwt': jwt_token})
             
         except Exception as e:
             print(e)
