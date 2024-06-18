@@ -33,8 +33,8 @@ class User(AbstractUser):
     name = models.CharField(max_length=150, default="")
     is_host = models.BooleanField(default=False)
     gender = models.CharField(max_length=10, choices=GenderChoices.choices)
-
+    kakao_id = models.CharField(default="", max_length=300)
     objects = UserManager()
 
     def __str__(self):
-        return self.email
+        return "123"

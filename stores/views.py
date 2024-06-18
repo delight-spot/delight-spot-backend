@@ -4,13 +4,13 @@ from django.db.models import Count, Avg, F, Q
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.exceptions import NotFound,PermissionDenied,ParseError
+from rest_framework.exceptions import NotFound,PermissionDenied,ParseError,AuthenticationFailed
 from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST, HTTP_201_CREATED
 from django.shortcuts import get_object_or_404
-
+import jwt
 from .serializer import StoreListSerializer, SellingListSerializer, StoreDetailSerializer, StorePostSerializer
 from .models import Store, SellList
-from reviews.serializers import ReviewSerializer
+from reviews.serializers import ReviewSerializer, ReviewDetailSerializer
 from medias.serializer import PhotoSerializer
 # from reviews.models import Reviews
 
@@ -206,14 +206,28 @@ class StoresDetail(APIView):
             raise NotFound
 
     def get(self, request, pk):
+        print(request.user)
         store = self.get_object(pk)
         serializer = StoreDetailSerializer(store, context={'request': request})
         return Response(serializer.data)
 
     def put(self, request, pk):
+
+        # 헤더에서 JWT 토큰 가져오기
+        jwt_token = request.headers.get('Authorization')
+        
+        try:
+            # JWT 토큰 디코드
+            payload = jwt.decode(jwt_token, settings.SECRET_KEY, algorithms=['HS256'])
+            kakao_id = payload['kakao_id']
+        except jwt.exceptions.InvalidTokenError:
+            raise AuthenticationFailed('Invalid token')
+
         store = self.get_object(pk)
-        if store.owner != request.user:
+
+        if store.owner.kakao_id != kakao_id:
             raise PermissionDenied
+        
         serializer = StoreDetailSerializer(store, data=request.data, partial=True)
         if serializer.is_valid():
             update_store = serializer.save()
@@ -261,6 +275,31 @@ class StoreReviews(APIView):
                 store=self.get_object(pk))
             serializer = ReviewSerializer(review)
             return Response(serializer.data)
+
+
+class StoreDetailReviews(APIView):
+
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_object(self, pk):
+        try:
+            return Store.objects.get(pk=pk)
+        except Store.DoesNotExist:
+            raise NotFound
+        
+    def get(self, request, pk):
+        try:
+            page = request.query_params.get("page", 1) # page를 찾을 수 없다면 1 page
+            page = int(page)
+        except ValueError:
+            page = 1
+        page_size = settings.PAGE_SIZE
+        start = (page - 1) * page_size
+        end = start + page_size
+        
+        store = self.get_object(pk)
+        serializer = ReviewDetailSerializer(store.reviews.all()[start:end], many=True)
+        return Response(serializer.data)
 
 class StorePhotosToggle(APIView):
 

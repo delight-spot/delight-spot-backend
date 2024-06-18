@@ -1,13 +1,14 @@
 from django.urls import path
 from rest_framework.authtoken.views import obtain_auth_token
 from . import views
-from .views import (Me, Users, PublicUser, ChangePassword, LogOut, UserReviews, UserReviewDetail, UserStore, UserStoreDetail, KakaoLogin, JWTLogIn, JWTSignup)
+from .views import (Me, Users, PublicUser, ChangePassword, LogOut, UserReviews, UserReviewDetail, UserStore, UserStoreDetail, KakaoLogin, KakaoSignup)
 
 urlpatterns = [
-    path("users/log-out", LogOut.as_view()),
+    # path("users/log-out", LogOut.as_view()),
     # path("users/jwt-login", JWTLogIn.as_view()),
     # path("users/jwt-signup", JWTSignup.as_view()),
     path("users/kakao", KakaoLogin.as_view()),
+    path("users/kakao-signup", KakaoSignup.as_view()),
     # path("users/token-login", obtain_auth_token),
     # path("users/change-password", ChangePassword.as_view()),
 
