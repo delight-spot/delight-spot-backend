@@ -1,10 +1,11 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
-from rest_framework.exceptions import NotFound, ParseError, PermissionDenied
+from rest_framework.exceptions import NotFound, ParseError, PermissionDenied, AuthenticationFailed
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK, HTTP_400_BAD_REQUEST
 from django.conf import settings
 from django.db.models import Prefetch #모델을 통해 직접 필터링하는 방식
+import jwt
 
 from .models import Booking
 from .serializers import BookingSerializer, BookingStoreSerializer
@@ -15,9 +16,26 @@ class Bookings(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request, username):
-
-        if request.user.username != username:
+        
+        # 헤더에서 JWT 토큰 가져오기
+        jwt_token = request.headers.get('Authorization')
+        
+        try:
+            # JWT 토큰 디코드
+            payload = jwt.decode(jwt_token, settings.SECRET_KEY, algorithms=['HS256'])
+            kakao_id = payload['kakao_id']
+        except jwt.exceptions.InvalidTokenError:
+            raise AuthenticationFailed('Invalid token')
+        
+        # if store.owner.kakao_id != kakao_id:
+        #     raise PermissionDenied
+        
+        if request.user.kakao_id != kakao_id:
             raise PermissionDenied(detail="접근 권한이 없습니다.")
+
+
+        # if request.user.username != username:
+        #     raise PermissionDenied(detail="접근 권한이 없습니다.")
 
         try:
             page = request.query_params.get("page", 1)
@@ -31,7 +49,8 @@ class Bookings(APIView):
 
         # 사용자의 모든 예약된 상점 가져오기
         # prefetch_related: 조인을 하지 않고 개별 쿼리를 실행 후, django에서 직접 데이터 조합
-        user_bookings = Booking.objects.filter(user__username=username).prefetch_related('store')
+        # user_bookings = Booking.objects.filter(user__username=username).prefetch_related('store')
+        user_bookings = Booking.objects.filter(user__kakao_id=kakao_id).prefetch_related('store')
         
         # 상점 리스트를 직접 구성하는 대신, 상점에 대한 쿼리셋을 사용
         store_ids = []

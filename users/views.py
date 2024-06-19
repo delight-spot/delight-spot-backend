@@ -344,7 +344,7 @@ class KakaoSignup(APIView):
             payload = {'kakao_id': kakao_id}
             jwt_token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
             print(jwt_token)
-            return Response(status=status.HTTP_200_OK, data={'is_member': True, 'kakao_jwt': jwt_token})
+            return Response(status=status.HTTP_200_OK, data={'signup': True, 'kakao_jwt': jwt_token})
             
         except Exception as e:
             print(e)

@@ -2,10 +2,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_201_CREATED, HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_403_FORBIDDEN
-from rest_framework.exceptions import NotFound,PermissionDenied, ParseError
+from rest_framework.exceptions import NotFound,PermissionDenied, ParseError, AuthenticationFailed
 from django.conf import settings
 from django.db.models import Q
 from django.utils.functional import SimpleLazyObject
+import jwt
 
 from .models import Group, SharedList
 from stores.models import Store
@@ -28,19 +29,31 @@ class GroupList(APIView):
         start = (page - 1) * page_size
         end = start + page_size
 
+         # 헤더에서 JWT 토큰 가져오기
+        jwt_token = request.headers.get('Authorization')
+        
+        try:
+            # JWT 토큰 디코드
+            payload = jwt.decode(jwt_token, settings.SECRET_KEY, algorithms=['HS256'])
+            kakao_id = payload['kakao_id']
+        except jwt.exceptions.InvalidTokenError:
+            raise AuthenticationFailed('Invalid token')
+
+
         # Q 객체는 Django의 ORM에서 복잡한 쿼리를 작성할 때 사용하는 도구, AND 및 OR 연산자를 사용하여 필터 조건을 결합 가능
-        user_groups = Group.objects.filter(Q(owner=request.user) | Q(members=request.user)).distinct()
+        # print(Group.objects.filter(Q(owner=request.user) | Q(members=request.user)).distinct())
+        user_groups = Group.objects.filter(Q(owner=request.user.kakao_id) | Q(members=request.user.kakao_id)).distinct()
 
         keyword = request.query_params.get('keyword')
         try:
             if keyword:
-                user_groups = Group.objects.filter(Q(owner=request.user) | Q(members=request.user) & Q(name__icontains=keyword)).distinct()
+                user_groups = Group.objects.filter(Q(owner=request.user.kakao_id) | Q(members=request.user.kakao_id) & Q(name__icontains=keyword)).distinct()
         except ValueError:
             raise ParseError(detail="Invalid 'keyword' parameter value.")
 
         # 검색 결과가 없을 경우 전체 예약된 상점 목록으로 다시 설정
         if not user_groups.exists():
-            user_groups = Group.objects.filter(Q(owner=request.user) | Q(members=request.user)).distinct()
+            user_groups = Group.objects.filter(Q(owner=request.user.kakao_id) | Q(members=request.user.kakao_id)).distinct()
             page = 1  # 페이지를 1로 초기화
             start = (page - 1) * page_size
             end = start + page_size
@@ -70,6 +83,7 @@ class GroupDetail(APIView):
     permission_classes = [IsAuthenticated]
     
     def get_object(self, user, pk):
+        
         try:
             group = Group.objects.get(pk=pk)
             if group.owner != user and user not in group.members.all():

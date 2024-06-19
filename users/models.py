@@ -37,4 +37,4 @@ class User(AbstractUser):
     objects = UserManager()
 
     def __str__(self):
-        return "123"
+        return self.name
