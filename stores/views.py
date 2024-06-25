@@ -103,6 +103,7 @@ class Stores(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request):
+        testpk = request
         try:
             page = request.query_params.get("page", 1) # page를 찾을 수 없다면 1 page
             page = int(page)

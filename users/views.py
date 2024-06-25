@@ -254,60 +254,24 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
     
 
+# class MyClass:
+
+#     def print_class_variable(self):
+#         print("hi there")
+#         class11 = 'test'
+
+# obj = MyClass()
+# obj1 = obj.print_class_variable()
+# obj1.class11
+
 class KakaoLogin(APIView):
     def post(self, request):
         try:
             code = request.data.get("code")
 
-            access_token = requests.post(
-                "https://kauth.kakao.com/oauth/token",
-                headers={"Content-Type": "application/x-www-form-urlencoded"},
-                data={
-                    "grant_type": "authorization_code",
-                    "client_id": "583f1ebb47209c90313ca9808363f605",
-                    "redirect_uri": "http://127.0.0.1:3000/social/kakao",
-                    "code": code,
-                },
-            )
-            access_token = access_token.json().get("access_token")
-            user_data = requests.get(
-                "https://kapi.kakao.com/v2/user/me",
-                headers={
-                    "Authorization": f"Bearer {access_token}",
-                    "Content-type": "application/x-www-form-urlencoded;charset=utf-8",
-                },
-            )
-            user_data = user_data.json()
-            kakao_id = user_data.get("id")
-
-            try:
-                user = User.objects.get(kakao_id=kakao_id)
-                login(request, user)
-
-                # JWT 토큰 생성
-                payload = {'kakao_id': kakao_id}
-                jwt_token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
-                print(jwt_token)
-                return Response(status=status.HTTP_200_OK, data={'is_member': True, 'kakao_jwt': jwt_token})
-            except User.DoesNotExist:
-                return Response(status=status.HTTP_200_OK, data={'is_member': False})
-        
-        except Exception as e:
-            print(e)
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-
-
-class KakaoSignup(APIView):
-    def post(self, request):
-        try:
-            code = request.data.get("code")
-            email = request.data.get("email")
-            print(code, email)
-            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-
-            if not code or not email:
+            if not code:
                 return Response(
-                    {"error": "Authorization code와 이메일은 필수입니다."}, 
+                    {"error": "Authorization code는 필수입니다."}, 
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
@@ -327,14 +291,11 @@ class KakaoSignup(APIView):
                     access_token_response.json(), 
                     status=status.HTTP_400_BAD_REQUEST
                 )
-
+            
             print(access_token_response.json(), "\n")
-
             access_token = access_token_response.json().get("access_token")
-            print(f"access_token: {access_token}")
-            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             refresh_token = access_token_response.json().get("refresh_token")
-            print(f"refresh_token: {refresh_token}")
+            print(f"access_token: {access_token}, refresh_token: {refresh_token}")
 
             if not access_token or not refresh_token:
                 return Response(
@@ -363,98 +324,68 @@ class KakaoSignup(APIView):
             profile = kakao_account.get("profile")
             kakao_id = user_data.get("id")
 
-            user, created = User.objects.get_or_create(
+            if User.objects.get(kakao_id=kakao_id):
+                try:
+                    user = User.objects.get(kakao_id=kakao_id)
+                    login(request, user)
+
+                    # JWT 토큰 생성
+                    payload = {'kakao_id': kakao_id}
+                    jwt_token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+                    print(jwt_token)
+                    return Response(status=status.HTTP_200_OK, data={'is_member': True, 'kakao_jwt': jwt_token})
+                except User.DoesNotExist:
+                    return Response(status=status.HTTP_200_OK, data={'is_member': False})
+        
+            else:
+                email = request.data.get("email")
+
+                if not email:
+                    return Response(
+                        {"error": "Authorization code는 필수입니다."}, 
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                user, created = User.objects.get_or_create(
                 kakao_id=kakao_id,
                 defaults={
                     'username': profile.get("nickname"),
                     'name': profile.get("nickname"),
                     'avatar': profile.get("profile_image_url"),
                     'kakao_id': kakao_id,
-                    'email' : email,
-                    'refresh_token': refresh_token,
-                }
-            )
+                    'email' : email
+                    }
+                )
 
-            if not created:
-                user.kakao_id = kakao_id
-                user.refresh_token = refresh_token
+                if not created:
+                    user.kakao_id = kakao_id
+                    user.save()
+
+                user.set_unusable_password()
                 user.save()
+                login(request, user)
 
-            user.set_unusable_password()
-            user.save()
-            login(request, user)
+                payload = {'kakao_id': kakao_id}
+                jwt_token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+                return Response(status=status.HTTP_200_OK, data={'signup': True, 'kakao_jwt': jwt_token})
 
-            payload = {'kakao_id': kakao_id}
-            jwt_token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
-
-            return Response(status=status.HTTP_200_OK, data={'signup': True, 'kakao_jwt': jwt_token})
-            
         except Exception as e:
             print(e)
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
+        # def refreshToken(refresh_token):
+            #     REST_API_KEY = "583f1ebb47209c90313ca9808363f605"
+            #     REDIRECT_URI = "https://kauth.kakao.com/oauth/token"
 
-
-# class KakaoSignup(APIView):
-
-#     def post(self, request):
-#         try:
-#             code = request.data.get("code")
-#             email = request.data.get("email")
-#             print(code, email)
-
-#             access_token = requests.post(
-#                 "https://kauth.kakao.com/oauth/token",
-#                 headers={"Content-Type": "application/x-www-form-urlencoded"},
-#                 data={
-#                     "grant_type": "authorization_code",
-#                     "client_id": "583f1ebb47209c90313ca9808363f605",
-#                     "redirect_uri": "http://127.0.0.1:3000/social/kakao",
-#                     "code": code,
-#                 },
-#             )
-#             print(access_token.json(), "\n")
+            #     data = {
+            #         "grant_type": "refresh_token",
+            #         "client_id":f"{REST_API_KEY}",
+            #         "refresh_token": refresh_token
+            #     }    
             
-#             access_token = access_token.json().get("access_token")
-#             refresh_token = access_token.json().get("refresh_token")
-#             print(access_token)
-#             print("!!!!!")
-#             print(refresh_token)
+            #     resp = requests.post(REDIRECT_URI , data=data)
+            #     new_token = resp.json()
 
-#             user_data = requests.get(
-#                 "https://kapi.kakao.com/v2/user/me",
-#                 headers={
-#                     "Authorization": f"Bearer {access_token}",
-#                     "Content-type": "application/x-www-form-urlencoded;charset=utf-8",
-#                 }
-#             ).json()
-            
-#             kakao_account = user_data.get("kakao_account")
-#             profile = kakao_account.get("profile")
-#             kakao_id = user_data.get("id")
+            #     return new_token['access_token']
 
-#             if not email:
-#                     return Response(
-#                         {"error": "이메일 정보가 필수입니다."}, status=status.HTTP_400_BAD_REQUEST
-#                     )
-            
-#             user = User.objects.get_or_create(
-#                 username=profile.get("nickname"),
-#                 name=profile.get("nickname"),
-#                 avatar=profile.get("profile_image_url"),
-#                 email=email,
-#                 kakao_id=kakao_id,
-#             )
-            
-#             user.set_unusable_password()  # 이 유저는 password로 로근인을 할 수 없기 때문에 설정 / .has_usable_password
-#             user.save()
-#             login(request, user)
-
-#             payload = {'kakao_id': kakao_id}
-#             jwt_token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
-#             print(jwt_token)
-#             return Response(status=status.HTTP_200_OK, data={'signup': True, 'kakao_jwt': jwt_token})
-            
-#         except Exception as e:
-#             print(e)
-#             return Response(status=status.HTTP_400_BAD_REQUEST)
+        # print(refreshToken(refresh_token))
