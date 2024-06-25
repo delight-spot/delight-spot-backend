@@ -8,7 +8,7 @@ urlpatterns = [
     # path("users/jwt-login", JWTLogIn.as_view()),
     # path("users/jwt-signup", JWTSignup.as_view()),
     path("users/kakao", KakaoLogin.as_view()),
-    # path("users/kakao-signup", KakaoSignup.as_view()),
+    path("users/kakao-signup", KakaoSignup.as_view()),
     # path("users/token-login", obtain_auth_token),
     # path("users/change-password", ChangePassword.as_view()),
 

@@ -8,7 +8,7 @@ class CustomUserAdmin(UserAdmin):
         (
             "Profile",
             {
-                "fields": ("username", "password", "name", "email", "is_host"),
+                "fields": ("username", "password", "name", "email", "is_host", "kakao_id"),
                 "classes": ("wide",),
             },
         ),
@@ -27,4 +27,4 @@ class CustomUserAdmin(UserAdmin):
         ),
         ("Important Dates", {"fields": ("last_login", "date_joined")}),
     )
-    list_display = ("username", "email", "name", "is_host")
+    list_display = ("username", "email", "name", "is_host", "kakao_id")
