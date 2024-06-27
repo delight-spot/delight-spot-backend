@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Reviews
 from users.serializer import TinyUserSerializer
+from stores.models import Store
 
 class ReviewSerializer(serializers.ModelSerializer):
 

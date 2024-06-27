@@ -6,7 +6,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound,PermissionDenied,ParseError,AuthenticationFailed
 from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST, HTTP_201_CREATED
-from django.shortcuts import get_object_or_404
 import jwt
 from .serializer import StoreListSerializer, SellingListSerializer, StoreDetailSerializer, StorePostSerializer
 from .models import Store, SellList
@@ -103,7 +102,6 @@ class Stores(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request):
-        testpk = request
         try:
             page = request.query_params.get("page", 1) # page를 찾을 수 없다면 1 page
             page = int(page)
@@ -216,7 +214,8 @@ class StoresDetail(APIView):
 
         # 헤더에서 JWT 토큰 가져오기
         jwt_token = request.headers.get('Authorization')
-        
+        print(jwt_token)
+
         try:
             # JWT 토큰 디코드
             payload = jwt.decode(jwt_token, settings.SECRET_KEY, algorithms=['HS256'])
