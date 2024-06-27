@@ -42,7 +42,9 @@ ALLOWED_HOSTS = ['192.168.0.42','10.0.2.2', 'localhost']
 THIRD_PARTY_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
+
     # "corsheaders",
+
     'rest_framework_simplejwt',
 ]
 
@@ -69,9 +71,11 @@ SYSTEM_APPS = [
 INSTALLED_APPS = CUSTOM_APPS + THIRD_PARTY_APPS + SYSTEM_APPS
 
 MIDDLEWARE = [
-    # "corsheaders.middleware.CorsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+
     # "whitenoise.middleware.WhiteNoiseMiddleware",
-    'django.middleware.security.SecurityMiddleware',
+    # 'django.middleware.security.SecurityMiddleware',
+
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -203,8 +207,14 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'user_id',
 }
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",
+#     "http://127.0.0.1:3000",
+# ]
 
+# CSRF 설정 추가
+# Django의 CSRF 보호 기능이 요청의 출처를 신뢰할 수 없다고 판단
+CSRF_TRUSTED_ORIGINS = [
+    'http://127.0.0.1:3000', 
+    'http://localhost:3000',
+]
