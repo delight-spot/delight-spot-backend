@@ -170,24 +170,6 @@ class StoreListSerializer(ModelSerializer):
     def get_total_rating(self, store):
         return store.total_rate()
 
-    # def get_taste_rating(self, store):
-    #     return store.taste_rate()
-    
-    # def get_atmosphere_rating(self, store):
-    #     return store.atmosphere_rate()
-    
-    # def get_kindness_rating(self, store):
-    #     return store.kindness_rate()
-    
-    # def get_clean_rating(self, store):
-    #     return store.clean_rate()
-    
-    # def get_parking_rating(self, store):
-    #     return store.parking_rate()
-    
-    # def get_restroom_rating(self, store):
-    #     return store.restroom_rate()
-    
 
     def get_reviews_len(self, store):
         return store.reviews_len()
@@ -213,15 +195,7 @@ class StoreListSerializer(ModelSerializer):
             "kind_menu",
             "city",
             "reviews_len",
-
             "total_rating",
-            # "taste_rating",
-            # "atmosphere_rating",
-            # "kindness_rating",
-            # "clean_rating",
-            # "parking_rating",
-            # "restroom_rating",
-
             "is_owner",
             "user_name",
             "is_liked",

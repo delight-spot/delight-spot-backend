@@ -3,7 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.status import HTTP_200_OK
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound, PermissionDenied
-from .models import Photo
+from .models import Photo, ReviewsPhoto
+from .serializer import ReviewPhotoSerializer
 
 from django.core.files.base import ContentFile
 
@@ -15,15 +16,41 @@ class PhotoDetail(APIView):
             return Photo.objects.get(pk=pk)
         except Photo.DoesNotExist:
             raise NotFound
+    
+    def get(self, request, pk):  # username 인자 추가
+        photo = self.get_object(pk)
+        serializer = ReviewPhotoSerializer(photo, context={"request": request})
+        return Response(serializer.data)
         
     def delete(self, request, pk):
         photo = self.get_object(pk)
-
         if (photo.store and photo.store.owner != request.user):
             raise PermissionDenied
         photo.delete()
         return Response(status=HTTP_200_OK)
     
+
+class ReviewPhotoDetail(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self, pk):
+        try:
+            return ReviewsPhoto.objects.get(pk=pk)
+        except ReviewsPhoto.DoesNotExist:
+             raise NotFound
+        
+    def get(self, request, pk):  # username 인자 추가
+        photo = self.get_object(pk)
+        serializer = ReviewPhotoSerializer(photo, context={"request": request})
+        return Response(serializer.data)
+            
+    def delete(self, request, pk):
+        photo = self.get_object(pk)
+        print(photo.user == request.user)
+        if (photo.user != request.user):
+            raise PermissionDenied
+        photo.delete()
+        return Response(status=HTTP_200_OK)
 
 # class GetUploadURL(APIView):
 

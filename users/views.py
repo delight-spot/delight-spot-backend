@@ -1,7 +1,7 @@
 from django.conf import settings
 import jwt
-from django.contrib.auth import login, authenticate, logout, get_user_model
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth import login, authenticate, logout
+# from django.contrib.auth.hashers import make_password
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -29,8 +29,10 @@ class Me(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user = request.user
-        return Response(PrivateUserSerializer(user).data)
+        if not request.user.is_authenticated:
+            return Response({"detail": "You do not have permission."}, status=HTTP_403_FORBIDDEN)
+        serializer = PrivateUserSerializer(request.user)
+        return Response(serializer.data)
 
     def put(self, request):
         user = request.user
@@ -119,7 +121,6 @@ class UserReviewDetail(APIView):
             raise NotFound
 
     def get(self, request, pk, username):  # username 인자 추가
-        
         review = self.get_list(pk, request.user)
         serializer = ReviewSerializer(review, context={"request": request})
         return Response(serializer.data)
@@ -313,7 +314,6 @@ class KakaoLogin(APIView):
             # 세션에 profile과 kakao_id 저장
             request.session['kakao_profile'] = profile
             request.session['kakao_id'] = kakao_id
-            request.session['code'] = code
 
             try:
                 user = User.objects.get(kakao_id=kakao_id)
@@ -335,16 +335,13 @@ class KakaoLogin(APIView):
 class KakaoSignup(APIView):
     def post(self, request):
         try:
-            code = request.data.get("code")
             email = request.data.get("email")
-            if not code or not email:
+            if not email:
                 return Response(
-                    {"error": "Authorization code와 이메일은 필수입니다."}, 
+                    {"error": "이메일은 필수입니다."}, 
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # 세션에서 profile과 kakao_id 가져오기
-            get_code = request.session.get('code')
             profile = request.session.get('kakao_profile')
             kakao_id = request.session.get('kakao_id')
 

@@ -1,9 +1,10 @@
 from django.urls import path
-from .views import PhotoDetail
+from .views import PhotoDetail, ReviewPhotoDetail
 # GetUploadURL, UploadPhoto
 
 urlpatterns = [
     path("medias/photos/<int:pk>", PhotoDetail.as_view()),
+    path("medias/reviews-photos/<int:pk>", ReviewPhotoDetail.as_view()),
     # path("photos/get-url", GetUploadURL.as_view()),
     # path("photos/upload-photo", UploadPhoto.as_view()),
 ]
