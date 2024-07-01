@@ -27,7 +27,7 @@ class Reviews(CommonModel):
     parking_rating = models.PositiveIntegerField(validators=[MaxValueValidator(5)], null=True, blank=True)
     restroom_rating = models.PositiveIntegerField(validators=[MaxValueValidator(5)], null=True, blank=True)
 
-    description = models.TextField()
+    description = models.TextField(null=False, blank=False)
 
     @property
     def total_rating(self):
