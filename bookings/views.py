@@ -27,15 +27,10 @@ class Bookings(APIView):
         except jwt.exceptions.InvalidTokenError:
             raise AuthenticationFailed('Invalid token')
         
-        # if store.owner.kakao_id != kakao_id:
-        #     raise PermissionDenied
         
         if request.user.kakao_id != kakao_id:
             raise PermissionDenied(detail="접근 권한이 없습니다.")
 
-
-        # if request.user.username != username:
-        #     raise PermissionDenied(detail="접근 권한이 없습니다.")
 
         try:
             page = request.query_params.get("page", 1)

@@ -41,19 +41,21 @@ class GroupList(APIView):
 
 
         # Q 객체는 Django의 ORM에서 복잡한 쿼리를 작성할 때 사용하는 도구, AND 및 OR 연산자를 사용하여 필터 조건을 결합 가능
-        # print(Group.objects.filter(Q(owner=request.user) | Q(members=request.user)).distinct())
+        # user_groups = Group.objects.filter(Q(owner=request.user) | Q(members=request.user)).distinct()
         user_groups = Group.objects.filter(Q(owner=request.user.kakao_id) | Q(members=request.user.kakao_id)).distinct()
 
         keyword = request.query_params.get('keyword')
         try:
             if keyword:
                 user_groups = Group.objects.filter(Q(owner=request.user.kakao_id) | Q(members=request.user.kakao_id) & Q(name__icontains=keyword)).distinct()
+                # user_groups = Group.objects.filter(Q(owner=request.user) | Q(members=request.user) & Q(name__icontains=keyword)).distinct()
         except ValueError:
             raise ParseError(detail="Invalid 'keyword' parameter value.")
 
         # 검색 결과가 없을 경우 전체 예약된 상점 목록으로 다시 설정
         if not user_groups.exists():
             user_groups = Group.objects.filter(Q(owner=request.user.kakao_id) | Q(members=request.user.kakao_id)).distinct()
+            # user_groups = Group.objects.filter(Q(owner=request.user) | Q(members=request.user)).distinct()
             page = 1  # 페이지를 1로 초기화
             start = (page - 1) * page_size
             end = start + page_size
@@ -83,7 +85,6 @@ class GroupDetail(APIView):
     permission_classes = [IsAuthenticated]
     
     def get_object(self, user, pk):
-        
         try:
             group = Group.objects.get(pk=pk)
             if group.owner != user and user not in group.members.all():
@@ -156,7 +157,7 @@ class GroupUserToggle(APIView):
         try:
             return Group.objects.get(pk=pk)
         except Group.DoesNotExist:
-            raise NotFound
+            raise NotFound     
 
     def get_user(self, username):
         try:
@@ -169,7 +170,8 @@ class GroupUserToggle(APIView):
         user = self.get_user(username)
         
         # 요청자가 그룹의 소유자이거나 멤버인지 확인
-        if request.user == group.owner or request.user in group.members.all():
+        if group.owner == user:
+        # if request.user == group.owner or request.user in group.members.all():
             # 사용자가 이미 멤버인지 확인
             if user in group.members.all():
                 group.members.remove(user)
@@ -182,10 +184,10 @@ class GroupUserToggle(APIView):
             return Response({"detail": "이 작업을 수행할 권한(permission)이 없습니다."}, status=HTTP_403_FORBIDDEN)
         
 
-class GroupShowList(APIView):
-    def get(self, request):
-        all_experience = SharedList.objects.all()
-        serializer = GroupShowListSerializer(
-            all_experience, many=True, context={"request": request}
-        )
-        return Response(serializer.data)
+# class GroupShowList(APIView):
+#     def get(self, request):
+#         all_experience = SharedList.objects.all()
+#         serializer = GroupShowListSerializer(
+#             all_experience, many=True, context={"request": request}
+#         )
+#         return Response(serializer.data)
