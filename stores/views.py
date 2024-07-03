@@ -10,7 +10,6 @@ import jwt
 from .serializer import StoreListSerializer, SellingListSerializer, StoreDetailSerializer, StorePostSerializer
 from .models import Store, SellList
 from reviews.serializers import ReviewSerializer, ReviewDetailSerializer
-from medias.serializer import PhotoSerializer
 # from reviews.models import Reviews
 
 class SellingList(APIView):

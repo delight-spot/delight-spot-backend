@@ -2,7 +2,7 @@ from rest_framework.serializers import ModelSerializer
 from .models import Booking
 from stores.serializer import StoreListSerializer, StoreSerializer, BookingStoreList
 from users.serializer import TinyUserSerializer
-from medias.serializer import PhotoSerializer
+from stores.serializer import BookingStoreList
 from stores.models import Store
 
 
@@ -15,7 +15,7 @@ class BookingSerializer(ModelSerializer):
         fields = ("pk","user", "store")
 
 class BookingStoreSerializer(ModelSerializer):
-    photos = PhotoSerializer(many=True, read_only=True)
+    photos = BookingStoreList(many=True, read_only=True)
 
     class Meta:
         model = Store

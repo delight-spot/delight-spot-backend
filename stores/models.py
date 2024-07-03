@@ -10,7 +10,7 @@ class Store(CommonModel):
         ECT = ("ect", "기타")
 
     name = models.CharField(max_length=200, default="")
-    description = models.TextField()
+    description = models.TextField(null=False, blank=False)
     kind_menu = models.CharField(max_length=20, choices=StoreMenuChoices)
     pet_friendly = models.BooleanField(default=False)
     city = models.CharField(max_length=100)

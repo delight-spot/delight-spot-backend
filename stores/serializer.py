@@ -1,7 +1,7 @@
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 from .models import Store, SellList
-from medias.serializer import PhotoSerializer
+# from medias.serializer import PhotoSerializer
 from users.serializer import TinyUserSerializer
 from bookings.models import Booking
 

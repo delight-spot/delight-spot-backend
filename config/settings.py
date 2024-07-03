@@ -53,7 +53,6 @@ CUSTOM_APPS = [
     "users.apps.UsersConfig",
     "stores.apps.StoresConfig",
     "reviews.apps.ReviewsConfig",
-    "medias.apps.MediasConfig",
     "bookings.apps.BookingsConfig",
     "userGroup.apps.UsergroupConfig",
     "notice.apps.NoticeConfig",
