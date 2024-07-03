@@ -25,6 +25,7 @@ class Store(CommonModel):
     "stores.SellList",
     related_name="foods",
     )
+    store_photo = models.JSONField(blank=True, null=True)
     
     def __str__(self):
         return self.name

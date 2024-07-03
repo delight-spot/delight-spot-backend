@@ -282,11 +282,14 @@ class StoreReviews(APIView):
     def post(self, request, pk):
         serializer = ReviewSerializer(data=request.data)
         if serializer.is_valid():
-            review = serializer.save(  # serializer에 추가적인 데이터 보내기
+            review = serializer.save(
                 user=request.user,
-                store=self.get_object(pk))
+                store=self.get_object(pk)
+            )
             serializer = ReviewSerializer(review)
             return Response(serializer.data)
+        else:
+            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 
 class StoreDetailReviews(APIView):
@@ -313,38 +316,38 @@ class StoreDetailReviews(APIView):
         serializer = ReviewDetailSerializer(store.reviews.all()[start:end], many=True)
         return Response(serializer.data)
 
-class StorePhotosToggle(APIView):
+# class StorePhotosToggle(APIView):
 
-    permission_classes = [IsAuthenticatedOrReadOnly]
+#     permission_classes = [IsAuthenticatedOrReadOnly]
 
-    def get_object(self, pk):
-        try:
-            return Store.objects.get(pk=pk)
-        except Store.DoesNotExist:
-            raise NotFound
+#     def get_object(self, pk):
+#         try:
+#             return Store.objects.get(pk=pk)
+#         except Store.DoesNotExist:
+#             raise NotFound
 
-    def post(self, request, pk):
+#     def post(self, request, pk):
 
-        # 헤더에서 JWT 토큰 가져오기
-        jwt_token = request.headers.get('Authorization')
+#         # 헤더에서 JWT 토큰 가져오기
+#         jwt_token = request.headers.get('Authorization')
         
-        try:
-            # JWT 토큰 디코드
-            payload = jwt.decode(jwt_token, settings.SECRET_KEY, algorithms=['HS256'])
-            kakao_id = payload['kakao_id']
-        except jwt.exceptions.InvalidTokenError:
-            raise AuthenticationFailed('Invalid token')
+#         try:
+#             # JWT 토큰 디코드
+#             payload = jwt.decode(jwt_token, settings.SECRET_KEY, algorithms=['HS256'])
+#             kakao_id = payload['kakao_id']
+#         except jwt.exceptions.InvalidTokenError:
+#             raise AuthenticationFailed('Invalid token')
         
-        store = self.get_object(pk)
+#         store = self.get_object(pk)
         
-        if store.owner.kakao_id != kakao_id:
-            raise PermissionDenied
+#         if store.owner.kakao_id != kakao_id:
+#             raise PermissionDenied
 
-        serializer = PhotoSerializer(data=request.data)
+#         serializer = PhotoSerializer(data=request.data)
 
-        if serializer.is_valid():
-            photo = serializer.save(store=store)
-            serializer = PhotoSerializer(photo)
-            return Response(serializer.data)
-        else:
-            return Response(serializer.errors)
+#         if serializer.is_valid():
+#             photo = serializer.save(store=store)
+#             serializer = PhotoSerializer(photo)
+#             return Response(serializer.data)
+#         else:
+#             return Response(serializer.errors)

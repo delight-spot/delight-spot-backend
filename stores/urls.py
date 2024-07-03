@@ -9,7 +9,7 @@ urlpatterns = [
 
     path("stores/<int:pk>/reviews", views.StoreReviews.as_view()),
     # path("stores/<int:pk>/reviews/<int:pk>", views.StoreDetailReviews.as_view()),
-    path("stores/<int:pk>/photos", views.StorePhotosToggle.as_view()),
+    # path("stores/<int:pk>/photos", views.StorePhotosToggle.as_view()),
 
     # path("/sellinglists", views.SellingList.as_view()),
 ]

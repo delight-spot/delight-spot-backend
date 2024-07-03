@@ -90,7 +90,7 @@ class ListSerializer(ModelSerializer):
     reviews_len = serializers.SerializerMethodField()
     sell_list = SellingListSerializer(read_only=True, many=True)
     # 역접근자는 위험하다 -> 방 하나에 수 천, 수 만개의 특성을 가지고 있을 수 있기 때문이다. -> pagination이 있어야 한다.
-    photos = PhotoSerializer(many=True, read_only=True)
+    store_photo = serializers.JSONField(required=False)
     is_owner = serializers.SerializerMethodField()
 
     def get_total_rating(self, store):
@@ -140,7 +140,7 @@ class ListSerializer(ModelSerializer):
             "parking_rating",
             "restroom_rating",
 
-            "photos",
+            "store_photo",
             "is_owner",
             "created_at"
         )
@@ -159,7 +159,7 @@ class StoreListSerializer(ModelSerializer):
     reviews_len = serializers.SerializerMethodField()
     is_owner = serializers.SerializerMethodField()
     # 역접근자는 위험하다 -> 방 하나에 수 천, 수 만개의 특성을 가지고 있을 수 있기 때문이다. -> pagination이 있어야 한다.
-    photos = PhotoSerializer(many=True, read_only=True)
+    store_photo = serializers.JSONField(required=False)
     is_liked = serializers.SerializerMethodField()
     user_name = serializers.SerializerMethodField()
 
@@ -199,7 +199,7 @@ class StoreListSerializer(ModelSerializer):
             "is_owner",
             "user_name",
             "is_liked",
-            "photos",
+            "store_photo",
             "created_at"
         )
         # depth = 1  # 모델의 모든 관계 확장 / 커스터마이즈 할 수 없다.
@@ -213,7 +213,7 @@ class StorePostSerializer(ModelSerializer):
     )
 
     is_owner = serializers.SerializerMethodField()
-    photos = PhotoSerializer(many=True, read_only=True)
+    store_photo = serializers.JSONField(required=False)
 
     class Meta:
         model = Store
@@ -227,7 +227,7 @@ class StorePostSerializer(ModelSerializer):
             "pet_friendly",
             "city",
             "is_owner",
-            "photos",
+            "store_photo",
         )
 
     def get_is_owner(self, store):
@@ -250,7 +250,7 @@ class StoreDetailSerializer(ModelSerializer):
     restroom_rating = serializers.SerializerMethodField()
 
     is_owner = serializers.SerializerMethodField()
-    photos = PhotoSerializer(many=True, read_only=True)
+    store_photo = serializers.JSONField(required=False)
     is_liked = serializers.SerializerMethodField()
 
     class Meta:
@@ -293,11 +293,11 @@ class StoreDetailSerializer(ModelSerializer):
 
     
 class BookingStoreList(ModelSerializer):
-    photos = PhotoSerializer(many=True, read_only=True)
+    store_photo = serializers.JSONField(required=False)
     is_liked = serializers.SerializerMethodField()
     class Meta:
         model = Store
-        fields = ("pk", "name", "total_rate", "photos", "is_liked", "created_at")
+        fields = ("pk", "name", "total_rate", "store_photo", "is_liked", "created_at")
 
     def get_is_liked(self, store):
         request = self.context.get('request')
@@ -306,8 +306,8 @@ class BookingStoreList(ModelSerializer):
         return False
     
 class GroupStoreList(ModelSerializer):
-    photos = PhotoSerializer(many=True, read_only=True)
+    store_photo = serializers.JSONField(required=False)
     class Meta:
         model = Store
-        fields = ("pk", "name", "photos", "created_at", "updated_at")
+        fields = ("pk", "name", "store_photo", "created_at", "updated_at")
         

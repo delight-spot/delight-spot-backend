@@ -28,6 +28,7 @@ class Reviews(CommonModel):
     restroom_rating = models.PositiveIntegerField(validators=[MaxValueValidator(5)], null=True, blank=True)
 
     description = models.TextField(null=False, blank=False)
+    review_photo = models.JSONField(null=True, blank=True)
 
     @property
     def total_rating(self):
