@@ -51,7 +51,7 @@ class Reviews(CommonModel):
             return f"{self.user.name}: {self.store.name}"
             # return f"{self.total_rating:.1f}"
         else:
-            return f"평점 리뷰가 없습니다"
+            return f"{self.user.name}: {self.store.name}"
 
         
         

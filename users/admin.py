@@ -8,7 +8,7 @@ class CustomUserAdmin(UserAdmin):
         (
             "Profile",
             {
-                "fields": ("username", "password", "name", "email", "is_host", "kakao_id"),
+                "fields": ("username", "password", "name", "email", "is_host", "kakao_id", "avatar"),
                 "classes": ("wide",),
             },
         ),
