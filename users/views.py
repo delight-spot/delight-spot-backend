@@ -1,7 +1,6 @@
 from django.conf import settings
 import jwt
 from django.contrib.auth import login, authenticate, logout
-# from django.contrib.auth.hashers import make_password
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -12,7 +11,7 @@ from rest_framework.status import HTTP_200_OK, HTTP_403_FORBIDDEN
 from rest_framework_simplejwt.tokens import RefreshToken
 
 import requests
-from .serializer import UserSerializer # RegisterSerializer, 
+from .serializer import UserSerializer
 from .models import User
 from reviews.models import Reviews
 from reviews.serializers import ReviewSerializer
@@ -23,16 +22,32 @@ import os
 import environ
 from pathlib import Path
 
+# swagger
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 
 class Me(APIView):
     permission_classes = [IsAuthenticated]
+
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Retrieve the authenticated user's profile",
+        responses={200: PrivateUserSerializer, 403: "Forbidden"}
+    )
 
     def get(self, request):
         if not request.user.is_authenticated:
             return Response({"detail": "You do not have permission."}, status=HTTP_403_FORBIDDEN)
         serializer = PrivateUserSerializer(request.user)
         return Response(serializer.data)
+
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Update the authenticated user's profile",
+        request_body=PrivateUserSerializer,
+        responses={200: PrivateUserSerializer, 400: "Bad Request", 403: "Forbidden"}
+    )
 
     def put(self, request):
         user = request.user
@@ -58,6 +73,13 @@ class Me(APIView):
 
 class Users(APIView):
 
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Create a new user",
+        request_body=PrivateUserSerializer,
+        responses={201: PrivateUserSerializer, 400: "Bad Request"}
+    )
+
     def post(self, request):
         password = request.data.get("password")
         if not password:
@@ -76,6 +98,12 @@ class Users(APIView):
 
 class PublicUser(APIView):
 
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Retrieve a public user profile by username",
+        responses={200: TinyUserSerializer, 404: "Not Found"}
+    )
+
     def get(self, request, username):
         try:
             user = User.objects.get(username=username)
@@ -87,6 +115,15 @@ class PublicUser(APIView):
 
 class UserReviews(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
+
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Retrieve reviews written by a specific user",
+        responses={200: ReviewSerializer(many=True)},
+        manual_parameters=[
+            openapi.Parameter('page', openapi.IN_QUERY, description="Page number", type=openapi.TYPE_INTEGER)
+        ]
+    )
 
     def get(self, request, username):
 
@@ -120,10 +157,23 @@ class UserReviewDetail(APIView):
         except Reviews.DoesNotExist:
             raise NotFound
 
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Retrieve a specific review by ID for a specific user",
+        responses={200: ReviewSerializer, 404: "Not Found"}
+    )
+
     def get(self, request, pk, username):  # username 인자 추가
         review = self.get_list(pk, request.user)
         serializer = ReviewSerializer(review, context={"request": request})
         return Response(serializer.data)
+
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Update a specific review by ID for a specific user",
+        request_body=ReviewSerializer,
+        responses={200: ReviewSerializer, 400: "Bad Request"}
+    )
 
     def put(self, request, pk, username):
         review = self.get_list(pk, request.user)
@@ -138,6 +188,13 @@ class UserReviewDetail(APIView):
             return Response(serializer.data)
         else:
             return Response(serializer.errors)
+        
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Delete a specific review by ID for a specific user",
+        responses={200: "OK", 404: "Not Found"}
+    )
+
     def delete(self, request, pk, username):
         review = self.get_list(pk, request.user)
         review.delete()
@@ -145,6 +202,15 @@ class UserReviewDetail(APIView):
 
 class UserStore(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
+
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Retrieve stores owned by a specific user",
+        responses={200: StoreListSerializer(many=True)},
+        manual_parameters=[
+            openapi.Parameter('page', openapi.IN_QUERY, description="Page number", type=openapi.TYPE_INTEGER)
+        ]
+    )
 
     def get(self, request, username):
 
@@ -180,10 +246,23 @@ class UserStoreDetail(APIView):
         except Store.DoesNotExist:
             raise NotFound
 
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Retrieve a specific store by ID for a specific user",
+        responses={200: StoreDetailSerializer, 404: "Not Found"}
+    )
+
     def get(self, request, pk, username):  # username 인자 추가
         review = self.get_list(pk, request.user)
         serializer = StoreDetailSerializer(review, context={"request": request})
         return Response(serializer.data)
+
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Update a specific store by ID for a specific user",
+        request_body=StoreDetailSerializer,
+        responses={200: StoreDetailSerializer, 400: "Bad Request"}
+    )
 
     def put(self, request, pk, username):
         review = self.get_list(pk, request.user)
@@ -198,6 +277,13 @@ class UserStoreDetail(APIView):
             return Response(serializer.data)
         else:
             return Response(serializer.errors)
+        
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Delete a specific store by ID for a specific user",
+        responses={200: "OK", 404: "Not Found"}
+    )
+
     def delete(self, request, pk, username):
         review = self.get_list(pk, request.user)
         review.delete()
@@ -207,6 +293,19 @@ class UserStoreDetail(APIView):
 class ChangePassword(APIView):
 
     permission_classes = [IsAuthenticated]
+
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Change the authenticated user's password",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'old_password': openapi.Schema(type=openapi.TYPE_STRING, description='Old password'),
+                'new_password': openapi.Schema(type=openapi.TYPE_STRING, description='New password')
+            }
+        ),
+        responses={200: "OK", 400: "Bad Request"}
+    )
 
     def put(self, request):
         user = request.user
@@ -221,6 +320,20 @@ class ChangePassword(APIView):
 
 
 class LogIn(APIView):
+
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Authenticate a user and log them in",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'username': openapi.Schema(type=openapi.TYPE_STRING, description='Username'),
+                'password': openapi.Schema(type=openapi.TYPE_STRING, description='Password')
+            }
+        ),
+        responses={200: "OK", 400: "Bad Request"}
+    )
+
     def post(self, request):
         username = request.data.get("username")
         password = request.data.get("password")
@@ -245,6 +358,12 @@ class LogIn(APIView):
 class LogOut(APIView):
     permission_classes = [IsAuthenticated]
 
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Log out the authenticated user",
+        responses={200: "OK"}
+    )
+
     def post(self, request):
         logout(request)
         return Response({"ok": "bye"})
@@ -255,6 +374,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 class KakaoLogin(APIView):
+
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Log in using Kakao OAuth",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'code': openapi.Schema(type=openapi.TYPE_STRING, description='Kakao authorization code')
+            }
+        ),
+        responses={200: "OK", 400: "Bad Request"}
+    )
+
     def post(self, request):
         try:
             code = request.data.get("code")
@@ -333,6 +465,19 @@ class KakaoLogin(APIView):
 
 
 class KakaoSignup(APIView):
+
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Sign up a new user using Kakao OAuth",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'email': openapi.Schema(type=openapi.TYPE_STRING, description='Email')
+            }
+        ),
+        responses={200: "OK", 400: "Bad Request"}
+    )
+
     def post(self, request):
         try:
             email = request.data.get("email")

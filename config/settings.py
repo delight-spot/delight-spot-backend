@@ -42,10 +42,9 @@ ALLOWED_HOSTS = ['192.168.0.42','10.0.2.2', 'localhost']
 THIRD_PARTY_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
-
     # "corsheaders",
-
     'rest_framework_simplejwt',
+    'drf_yasg',
 ]
 
 CUSTOM_APPS = [

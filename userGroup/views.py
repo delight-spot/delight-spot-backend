@@ -13,10 +13,23 @@ from stores.models import Store
 from users.models import User
 from .serializers import GroupSerializer, MakeGroupSerializer, GroupDetailSerializer, GroupShowListSerializer
 
+# swagger
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 class GroupList(APIView):
 
     permission_classes = [IsAuthenticated]
+
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Retrieve a list of groups for the authenticated user",
+        responses={200: GroupSerializer(many=True)},
+        manual_parameters=[
+            openapi.Parameter('page', openapi.IN_QUERY, description="Page number", type=openapi.TYPE_INTEGER),
+            openapi.Parameter('keyword', openapi.IN_QUERY, description="Keyword to search groups", type=openapi.TYPE_STRING)
+        ]
+    )
 
     def get(self, request):
         try:
@@ -71,6 +84,13 @@ class GroupList(APIView):
         serializer = GroupSerializer(paginated_groups, many=True, context={"request": request})
         return Response(serializer.data)
 
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Create a new group",
+        request_body=MakeGroupSerializer,
+        responses={201: MakeGroupSerializer, 400: "Bad Request"}
+    )
+
     def post(self, request):
         serializer = MakeGroupSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
@@ -93,6 +113,12 @@ class GroupDetail(APIView):
         except Group.DoesNotExist:
             raise NotFound
 
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Retrieve a group by its ID",
+        responses={200: GroupDetailSerializer, 404: "Not Found"}
+    )
+
     def get(self, request, pk):
         user = request.user
         if isinstance(user, SimpleLazyObject):
@@ -101,6 +127,12 @@ class GroupDetail(APIView):
         serializer = GroupDetailSerializer(group, context={'request': request})
         return Response(serializer.data)
     
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Delete a group by its ID",
+        responses={204: "No Content", 403: "Permission Denied"}
+    )
+
     def delete(self, request, pk):
         user = request.user
         if isinstance(user, SimpleLazyObject):
@@ -133,6 +165,15 @@ class GroupStoreToggle(APIView):
         except Store.DoesNotExist:
             raise NotFound
         
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Toggle a store in the group's shared list",
+        responses={200: "OK", 204: "No Content", 403: "Permission Denied"},
+        manual_parameters=[
+            openapi.Parameter('store_pk', openapi.IN_PATH, description="Primary key of the store", type=openapi.TYPE_INTEGER)
+        ]
+    )
+    
     def put(self, request, pk, store_pk):
         group = self.get_group(pk)
         
@@ -165,6 +206,12 @@ class GroupUserToggle(APIView):
         except User.DoesNotExist:
             raise NotFound
         
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Toggle a user in the group",
+        responses={200: "OK", 204: "No Content", 403: "Permission Denied"}
+    )
+    
     def put(self, request, pk, username):
         group = self.get_group(pk)
         user = self.get_user(username)

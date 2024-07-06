@@ -10,17 +10,33 @@ import jwt
 from .serializer import StoreListSerializer, SellingListSerializer, StoreDetailSerializer, StorePostSerializer
 from .models import Store, SellList
 from reviews.serializers import ReviewSerializer, ReviewDetailSerializer
-# from reviews.models import Reviews
+
+# swagger 추가
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 class SellingList(APIView):
 
     permission_classes = [IsAuthenticatedOrReadOnly]
+
+    # swagger 추가
+    @swagger_auto_schema(
+        operation_description="Retrieve all selling lists",
+        responses={200: SellingListSerializer(many=True)}
+    )
 
     def get(self, request):
         all_store = SellList.objects.all()
         serializer = SellingListSerializer(all_store, many=True, context={'request': request})
         return Response(serializer.data)
     
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Create a new selling list",
+        request_body=SellingListSerializer,
+        responses={201: SellingListSerializer, 400: "Bad Request"}
+    )
+
     def post(self, request):
         serializer = SellingListSerializer(data=request.data)
         if serializer.is_valid():
@@ -40,11 +56,24 @@ class SellingListDetail(APIView):
         except SellList.DoesNotExist:
             raise NotFound
 
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Retrieve a selling list by its ID",
+        responses={200: SellingListSerializer, 404: "Not Found"}
+    )
+
     def get(self, request, pk):
         sell_list = self.get_object(pk)
         serializer = SellingListSerializer(sell_list)
         return Response(serializer.data)
     
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Update a selling list by its ID",
+        request_body=SellingListSerializer,
+        responses={200: SellingListSerializer, 400: "Bad Request"}
+    )
+
     def put(self, request, pk):
         sell_list = self.get_object(pk)
         serializer = SellingListSerializer(sell_list, data=request.data, partial=True)
@@ -53,6 +82,12 @@ class SellingListDetail(APIView):
             return Response(SellingListSerializer(update_sell_list).data)
         else:
             return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Delete a selling list by its ID",
+        responses={204: "No Content"}
+    )
 
     def delete(self, request, pk):
         sell_list = self.get_object(pk)
@@ -70,6 +105,15 @@ class SellingListView(APIView):
         except Store.DoesNotExist:
             raise NotFound
         
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Retrieve the selling list for a specific store",
+        responses={200: SellingListSerializer(many=True)},
+        manual_parameters=[
+            openapi.Parameter('page', openapi.IN_QUERY, description="Page number", type=openapi.TYPE_INTEGER)
+        ]
+    )
+
     def get(self, request, pk):
         try:
             page = request.query_params.get("page", 1) # page를 찾을 수 없다면 1 page
@@ -85,6 +129,13 @@ class SellingListView(APIView):
         serializer = SellingListSerializer(store.sell_list.all()[start:end], many=True)
         return Response(serializer.data)
     
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Add an item to the selling list for a specific store",
+        request_body=SellingListSerializer,
+        responses={201: SellingListSerializer, 400: "Bad Request"}
+    )
+
 
     def post(self, request, pk):
         store = self.get_object(pk)
@@ -99,6 +150,17 @@ class SellingListView(APIView):
 class Stores(APIView):
     
     permission_classes = [IsAuthenticatedOrReadOnly]
+
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Retrieve all stores with optional filtering",
+        responses={200: StoreListSerializer(many=True)},
+        manual_parameters=[
+            openapi.Parameter('page', openapi.IN_QUERY, description="Page number", type=openapi.TYPE_INTEGER),
+            openapi.Parameter('keyword', openapi.IN_QUERY, description="Keyword to search stores", type=openapi.TYPE_STRING),
+            openapi.Parameter('type', openapi.IN_QUERY, description="Type of store", type=openapi.TYPE_STRING, multiple=True)
+        ]
+    )
 
     def get(self, request):
         try:
@@ -170,6 +232,13 @@ class Stores(APIView):
         serializer = StoreListSerializer(all_store[start:end], many=True, context={'request': request})
         return Response(serializer.data)
     
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Create a new store",
+        request_body=StorePostSerializer,
+        responses={201: StorePostSerializer, 400: "Bad Request"}
+    )
+
     def post(self, request):
         serializer = StorePostSerializer(data=request.data)
 
@@ -204,11 +273,25 @@ class StoresDetail(APIView):
         except Store.DoesNotExist:
             raise NotFound
 
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Retrieve a store by its ID",
+        responses={200: StoreDetailSerializer, 404: "Not Found"}
+    )
+
+
     def get(self, request, pk):
         print(request.user)
         store = self.get_object(pk)
         serializer = StoreDetailSerializer(store, context={'request': request})
         return Response(serializer.data)
+
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Update a store by its ID",
+        request_body=StoreDetailSerializer,
+        responses={200: StoreDetailSerializer, 400: "Bad Request", 403: "Permission Denied"}
+    )
 
     def put(self, request, pk):
 
@@ -235,6 +318,12 @@ class StoresDetail(APIView):
         else:
             return Response(serializer.errors)
         
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Delete a store by its ID",
+        responses={204: "No Content", 403: "Permission Denied"}
+    )
+    
     def delete(self, request, pk):
         # 헤더에서 JWT 토큰 가져오기
         jwt_token = request.headers.get('Authorization')
@@ -264,7 +353,16 @@ class StoreReviews(APIView):
             return Store.objects.get(pk=pk)
         except Store.DoesNotExist:
             raise NotFound
-        
+
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Retrieve reviews for a specific store",
+        responses={200: ReviewSerializer(many=True)},
+        manual_parameters=[
+            openapi.Parameter('page', openapi.IN_QUERY, description="Page number", type=openapi.TYPE_INTEGER)
+        ]
+    )
+
     def get(self, request, pk):
         try:
             page = request.query_params.get("page", 1) # page를 찾을 수 없다면 1 page
@@ -278,6 +376,13 @@ class StoreReviews(APIView):
         store = self.get_object(pk)
         serializer = ReviewSerializer(store.reviews.all()[start:end], many=True)
         return Response(serializer.data)
+
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Create a review for a specific store",
+        request_body=ReviewSerializer,
+        responses={201: ReviewSerializer, 400: "Bad Request"}
+    )
 
     def post(self, request, pk):
         serializer = ReviewSerializer(data=request.data)
@@ -302,6 +407,15 @@ class StoreDetailReviews(APIView):
         except Store.DoesNotExist:
             raise NotFound
         
+    # swagger
+    @swagger_auto_schema(
+        operation_description="Retrieve detailed reviews for a specific store",
+        responses={200: ReviewDetailSerializer(many=True)},
+        manual_parameters=[
+            openapi.Parameter('page', openapi.IN_QUERY, description="Page number", type=openapi.TYPE_INTEGER)
+        ]
+    )
+
     def get(self, request, pk):
         try:
             page = request.query_params.get("page", 1) # page를 찾을 수 없다면 1 page
@@ -315,6 +429,8 @@ class StoreDetailReviews(APIView):
         store = self.get_object(pk)
         serializer = ReviewDetailSerializer(store.reviews.all()[start:end], many=True)
         return Response(serializer.data)
+
+
 
 # class StorePhotosToggle(APIView):
 

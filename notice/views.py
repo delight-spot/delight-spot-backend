@@ -8,9 +8,23 @@ from rest_framework.exceptions import NotFound, ParseError, PermissionDenied
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
 
+# swagger 추가
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
 class NoticeViews(APIView):
 
     permission_classes = [IsAuthenticatedOrReadOnly]
+
+    # swagger 추가
+    @swagger_auto_schema(
+        operation_description="Retrieve all notices",
+        responses={200: NoticeSerializer(many=True)},
+        manual_parameters=[
+            openapi.Parameter('page', openapi.IN_QUERY, description="Page number", type=openapi.TYPE_INTEGER),
+            openapi.Parameter('keyword', openapi.IN_QUERY, description="Keyword to search notices", type=openapi.TYPE_STRING),
+        ]
+    )
 
     def get(self, request):
         try:
@@ -41,6 +55,13 @@ class NoticeViews(APIView):
         )
         return Response(serializer.data)
     
+    # swagger 추가
+    @swagger_auto_schema(
+        operation_description="Create a new notice",
+        request_body=PostNoticeSerializer,
+        responses={201: PostNoticeSerializer, 400: "Bad Request"}
+    )
+
     def post(self, request):
         if not request.user.is_host:
             raise PermissionDenied(detail="You do not have permission to perform this action.")
@@ -60,11 +81,24 @@ class NoticeDetail(APIView):
         except Notice.DoesNotExist:
             raise NotFound
 
+    # swagger 추가
+    @swagger_auto_schema(
+        operation_description="Retrieve a notice by its ID",
+        responses={200: NoticeDetailSerializer, 404: "Not Found"}
+    )
+
     def get(self, request, pk):
         notice = self.get_object(pk)
         serializer = NoticeDetailSerializer(notice, context={'request': request})
         return Response(serializer.data)
     
+    # swagger 추가
+    @swagger_auto_schema(
+        operation_description="Update a notice by its ID",
+        request_body=NoticeDetailSerializer,
+        responses={200: NoticeDetailSerializer, 400: "Bad Request", 403: "Permission Denied"}
+    )
+
     def put(self, request, pk):
         notice = self.get_object(pk)
         if not request.user.is_host:
@@ -76,6 +110,12 @@ class NoticeDetail(APIView):
         else:
             return Response(serializer.errors)
     
+    # swagger 추가
+    @swagger_auto_schema(
+        operation_description="Delete a notice by its ID",
+        responses={204: "No Content", 403: "Permission Denied"}
+    )
+
     def delete(self, request, pk):
         store = self.get_object(pk)
         if not request.user.is_host:

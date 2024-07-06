@@ -11,9 +11,24 @@ from .models import Booking
 from .serializers import BookingSerializer, BookingStoreSerializer
 from stores.models import Store
 
+# swagger 추가
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
 
 class Bookings(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
+
+    # swagger 추가
+    @swagger_auto_schema(
+        operation_description="Retrieve the list of stores the user has booked",
+        responses={200: BookingStoreSerializer(many=True)},
+        manual_parameters=[
+            openapi.Parameter('page', openapi.IN_QUERY, description="Page number", type=openapi.TYPE_INTEGER),
+            openapi.Parameter('keyword', openapi.IN_QUERY, description="Keyword to search stores", type=openapi.TYPE_STRING),
+            openapi.Parameter('type', openapi.IN_QUERY, description="Type of store", type=openapi.TYPE_STRING, multiple=True),
+        ]
+    )
 
     def get(self, request, username):
         
@@ -82,6 +97,13 @@ class Bookings(APIView):
         serializer = BookingStoreSerializer(paginated_stores, many=True, context={"request": request})
         return Response(serializer.data)
     
+    # swagger 추가
+    @swagger_auto_schema(
+        operation_description="Create a booking for the user",
+        request_body=BookingSerializer,
+        responses={200: BookingSerializer}
+    )
+
     def post(self, request, username):
         user_bookings = Booking.objects.filter(user=request.user)
 
@@ -140,6 +162,24 @@ class BookingToggle(APIView):
                 booking.save()
 
         return Response({"status": "success", "action": action}, status=HTTP_200_OK)
+
+    # swagger 추가
+    @swagger_auto_schema(
+        operation_description="Toggle a store in the user's bookings",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'store_pk': openapi.Schema(type=openapi.TYPE_INTEGER, description='Primary key of the store')
+            }
+        ),
+        responses={200: openapi.Response('Success', openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'status': openapi.Schema(type=openapi.TYPE_STRING),
+                'action': openapi.Schema(type=openapi.TYPE_STRING)
+            }
+        ))}
+    )
 
     def put(self, request, store_pk, username):
         return self.handle_toggle(request, [store_pk])
