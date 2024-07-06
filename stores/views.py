@@ -176,21 +176,22 @@ class Stores(APIView):
         if serializer.is_valid():
             sell_list = request.data.get('sell_list')
             
+            # Store 객체를 먼저 저장
+            store = serializer.save(owner=request.user)
+
+            # sell_list가 있을 때만 처리
             if sell_list is not None:
-                store = serializer.save(owner=request.user)
                 for sell_list_pk in sell_list:
                     try:
                         selling = SellList.objects.get(pk=sell_list_pk)
                         store.sell_list.add(selling)
                     except SellList.DoesNotExist:
-                        return Response({"error": f"{sell_list_pk}가 존재하지 않습니다."}, status=HTTP_400_BAD_REQUEST)
+                        return Response({"error": f"{sell_list_pk}가 존재하지 않습니다."}, status=400)
                 
-                serializer = StorePostSerializer(store, context={"request": request})
-                return Response(serializer.data)
-            else:
-                return Response({"error": "판매 물건이 필요합니다."}, status=HTTP_400_BAD_REQUEST)
+            serializer = StorePostSerializer(store, context={"request": request})
+            return Response(serializer.data)
         else:
-            return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=400)
 
 
 class StoresDetail(APIView):

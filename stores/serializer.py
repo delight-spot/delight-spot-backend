@@ -206,11 +206,6 @@ class StoreListSerializer(ModelSerializer):
 class StorePostSerializer(ModelSerializer):
     
     owner = TinyUserSerializer(read_only=True)
-    # sell_list = SellingListSerializer(
-    #     read_only=True,
-    #     many=True,
-    # )
-
     is_owner = serializers.SerializerMethodField()
     store_photo = serializers.JSONField(required=False)
 
@@ -222,7 +217,6 @@ class StorePostSerializer(ModelSerializer):
             "name",
             "description",
             "kind_menu",
-            # "sell_list",
             "pet_friendly",
             "city",
             "is_owner",
