@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import Reviews
 from users.serializer import TinyUserSerializer
 from stores.models import Store
-# from medias.serializer import ReviewPhotoSerializer 
+
 
 
 class ReviewSerializer(serializers.ModelSerializer):
