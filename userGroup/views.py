@@ -169,25 +169,14 @@ class GroupUserToggle(APIView):
         group = self.get_group(pk)
         user = self.get_user(username)
         
-        # 요청자가 그룹의 소유자이거나 멤버인지 확인
-        if group.owner == user:
-        # if request.user == group.owner or request.user in group.members.all():
+        # 요청자가 그룹의 소유자인지 확인
+        if group.owner == group.owner:
             # 사용자가 이미 멤버인지 확인
             if user in group.members.all():
                 group.members.remove(user)
-                return Response(status=HTTP_204_NO_CONTENT)
+                return Response({"detail": "User removed from group"}, status=204)
             else:
                 group.members.add(user)
-                return Response(status=HTTP_200_OK)
+                return Response({"detail": "User added to group"}, status=200)
         else:
-            # print(f"Access denied for user: {request.user.username}")  # 디버깅 정보 추가
             return Response({"detail": "이 작업을 수행할 권한(permission)이 없습니다."}, status=HTTP_403_FORBIDDEN)
-        
-
-# class GroupShowList(APIView):
-#     def get(self, request):
-#         all_experience = SharedList.objects.all()
-#         serializer = GroupShowListSerializer(
-#             all_experience, many=True, context={"request": request}
-#         )
-#         return Response(serializer.data)

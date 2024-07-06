@@ -25,6 +25,8 @@ class MakeGroupSerializer(ModelSerializer):
         # context에서 request를 가져와서 request.user를 owner로 설정
         user = self.context['request'].user
         group = Group.objects.create(owner=user, **validated_data)
+        # SharedList 생성
+        SharedList.objects.create(group=group)
         return group
 
 
