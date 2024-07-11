@@ -59,7 +59,7 @@ class NoticeViews(APIView):
     @swagger_auto_schema(
         operation_description="Create a new notice",
         request_body=PostNoticeSerializer,
-        responses={201: PostNoticeSerializer, 400: "Bad Request"}
+        responses={201: "OK", 400: "Bad Request"}
     )
 
     def post(self, request):
@@ -69,7 +69,7 @@ class NoticeViews(APIView):
         serializer = PostNoticeSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save(user=request.user)
-            return Response(serializer.data, status=HTTP_201_CREATED)
+            return Response(status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
     
 class NoticeDetail(APIView):
@@ -96,7 +96,7 @@ class NoticeDetail(APIView):
     @swagger_auto_schema(
         operation_description="Update a notice by its ID",
         request_body=NoticeDetailSerializer,
-        responses={200: NoticeDetailSerializer, 400: "Bad Request", 403: "Permission Denied"}
+        responses={200: "OK", 400: "Bad Request", 403: "Permission Denied"}
     )
 
     def put(self, request, pk):

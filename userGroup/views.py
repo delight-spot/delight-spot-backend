@@ -73,12 +73,6 @@ class GroupList(APIView):
             start = (page - 1) * page_size
             end = start + page_size
 
-        # total_count = user_groups.count()
-        # if start >= total_count:
-        #     page = 1
-        #     start = (page - 1) * page_size
-        #     end = start + page_size
-
         paginated_groups = user_groups[start:end]
 
         serializer = GroupSerializer(paginated_groups, many=True, context={"request": request})
@@ -88,7 +82,7 @@ class GroupList(APIView):
     @swagger_auto_schema(
         operation_description="Create a new group",
         request_body=MakeGroupSerializer,
-        responses={201: MakeGroupSerializer, 400: "Bad Request"}
+        responses={201: "OK", 400: "Bad Request"}
     )
 
     def post(self, request):
@@ -96,7 +90,7 @@ class GroupList(APIView):
         if serializer.is_valid():
             group = serializer.save()  # owner는 create 메소드 내에서 처리됩니다.
             serializer = MakeGroupSerializer(group)
-            return Response(serializer.data)
+            return Response("ok", status=200)
         else:
             return Response(serializer.errors, status=400)
         

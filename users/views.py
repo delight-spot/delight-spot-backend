@@ -47,7 +47,7 @@ class Me(APIView):
     @swagger_auto_schema(
         operation_description="Update the authenticated user's profile",
         request_body=PrivateUserSerializer,
-        responses={200: PrivateUserSerializer, 400: "Bad Request", 403: "Forbidden"}
+        responses={200: "OK", 400: "Bad Request", 403: "Forbidden"}
     )
 
     def put(self, request):
@@ -67,7 +67,7 @@ class Me(APIView):
         if serializer.is_valid():
             new_user = serializer.save()
             serializer = PrivateUserSerializer(new_user)
-            return Response(serializer.data)
+            return Response("OK")
         else:
             return Response(serializer.errors)
 
@@ -78,7 +78,7 @@ class Users(APIView):
     @swagger_auto_schema(
         operation_description="Create a new user",
         request_body=PrivateUserSerializer,
-        responses={201: PrivateUserSerializer, 400: "Bad Request"}
+        responses={201: "OK", 400: "Bad Request"}
     )
 
     def post(self, request):
@@ -92,7 +92,7 @@ class Users(APIView):
             user.set_password(password)
             user.save()
             serializer = PrivateUserSerializer(user)
-            return Response(serializer.data)
+            return Response("OK")
         else:
             return Response(serializer.errors)
 
@@ -173,7 +173,7 @@ class UserReviewDetail(APIView):
     @swagger_auto_schema(
         operation_description="Update a specific review by ID for a specific user",
         request_body=ReviewSerializer,
-        responses={200: ReviewSerializer, 400: "Bad Request"}
+        responses={200: "OK", 400: "Bad Request"}
     )
 
     def put(self, request, pk, username):
@@ -186,7 +186,7 @@ class UserReviewDetail(APIView):
         if serializer.is_valid():
             update_wishlist = serializer.save()
             serializer = ReviewSerializer(update_wishlist)
-            return Response(serializer.data)
+            return Response("OK")
         else:
             return Response(serializer.errors)
         
@@ -262,7 +262,7 @@ class UserStoreDetail(APIView):
     @swagger_auto_schema(
         operation_description="Update a specific store by ID for a specific user",
         request_body=StoreDetailSerializer,
-        responses={200: StoreDetailSerializer, 400: "Bad Request"}
+        responses={200: "OK", 400: "Bad Request"}
     )
 
     def put(self, request, pk, username):
@@ -275,7 +275,7 @@ class UserStoreDetail(APIView):
         if serializer.is_valid():
             update_wishlist = serializer.save()
             serializer = StoreDetailSerializer(update_wishlist)
-            return Response(serializer.data)
+            return Response("OK")
         else:
             return Response(serializer.errors)
         

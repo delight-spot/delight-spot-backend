@@ -35,14 +35,15 @@ class SellingList(APIView):
     @swagger_auto_schema(
         operation_description="Create a new selling list",
         request_body=SellingListSerializer,
-        responses={201: SellingListSerializer, 400: "Bad Request"}
+        responses={201: "OK", 400: "Bad Request"}
     )
 
     def post(self, request):
         serializer = SellingListSerializer(data=request.data)
         if serializer.is_valid():
             new_selling = serializer.save()
-            return Response(SellingListSerializer(new_selling).data)
+            return Response("OK")
+            # return Response(SellingListSerializer(new_selling).data)
         else:
             return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
@@ -72,15 +73,17 @@ class SellingListDetail(APIView):
     @swagger_auto_schema(
         operation_description="Update a selling list by its ID",
         request_body=SellingListSerializer,
-        responses={200: SellingListSerializer, 400: "Bad Request"}
+        responses={200: "OK", 400: "Bad Request"}
     )
 
     def put(self, request, pk):
         sell_list = self.get_object(pk)
         serializer = SellingListSerializer(sell_list, data=request.data, partial=True)
         if serializer.is_valid():
-            update_sell_list = serializer.save()
-            return Response(SellingListSerializer(update_sell_list).data)
+            # update_sell_list = serializer.save()
+            serializer.save()
+            return Response("OK")
+            # return Response(SellingListSerializer(update_sell_list).data)
         else:
             return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
@@ -109,7 +112,7 @@ class SellingListView(APIView):
     # swagger
     @swagger_auto_schema(
         operation_description="Retrieve the selling list for a specific store",
-        responses={200: SellingListSerializer(many=True)},
+        responses={200: "OK"},
         manual_parameters=[
             openapi.Parameter('page', openapi.IN_QUERY, description="Page number", type=openapi.TYPE_INTEGER)
         ]
@@ -134,7 +137,7 @@ class SellingListView(APIView):
     @swagger_auto_schema(
         operation_description="Add an item to the selling list for a specific store",
         request_body=SellingListSerializer,
-        responses={201: SellingListSerializer, 400: "Bad Request"}
+        responses={201: "OK", 400: "Bad Request"}
     )
 
 
@@ -144,7 +147,7 @@ class SellingListView(APIView):
         if sell_list_serializer.is_valid():
             sell_list_serializer.save()
             store.sell_list.add(sell_list_serializer.instance)
-            return Response(sell_list_serializer.data, status=HTTP_201_CREATED)
+            return Response("OK")
         else:
             return Response(sell_list_serializer.errors, status=HTTP_400_BAD_REQUEST)
 
@@ -155,7 +158,7 @@ class Stores(APIView):
     # swagger
     @swagger_auto_schema(
         operation_description="Retrieve all stores with optional filtering",
-        responses={200: StoreListSerializer(many=True)},
+        responses={200: "OK"},
         manual_parameters=[
             openapi.Parameter('page', openapi.IN_QUERY, description="Page number", type=openapi.TYPE_INTEGER),
             openapi.Parameter('keyword', openapi.IN_QUERY, description="Keyword to search stores", type=openapi.TYPE_STRING),
@@ -237,7 +240,7 @@ class Stores(APIView):
     @swagger_auto_schema(
         operation_description="Create a new store",
         request_body=StorePostSerializer,
-        responses={201: StorePostSerializer, 400: "Bad Request"}
+        responses={201: "OK", 400: "Bad Request"}
     )
 
     def post(self, request):
@@ -259,7 +262,7 @@ class Stores(APIView):
                         return Response({"error": f"{sell_list_pk}가 존재하지 않습니다."}, status=400)
                 
             serializer = StorePostSerializer(store, context={"request": request})
-            return Response(serializer.data)
+            return Response("OK")
         else:
             return Response(serializer.errors, status=400)
 
@@ -279,8 +282,6 @@ class StoresDetail(APIView):
         operation_description="Retrieve a store by its ID",
         responses={200: StoreDetailSerializer, 404: "Not Found"}
     )
-
-
     def get(self, request, pk):
         store = self.get_object(pk)
         serializer = StoreDetailSerializer(store, context={'request': request})
@@ -290,31 +291,29 @@ class StoresDetail(APIView):
     @swagger_auto_schema(
         operation_description="Update a store by its ID",
         request_body=StoreDetailSerializer,
-        responses={200: StoreDetailSerializer, 400: "Bad Request", 403: "Permission Denied"}
+        responses={200: "OK", 400: "Bad Request", 403: "Permission Denied"}
     )
-
     def put(self, request, pk):
 
         # 헤더에서 JWT 토큰 가져오기
-        # jwt_token = request.headers.get('Authorization')
-        # print(jwt_token)
+        jwt_token = request.headers.get('Authorization')
 
-        # try:
-        #     # JWT 토큰 디코드
-        #     payload = jwt.decode(jwt_token, settings.SECRET_KEY, algorithms=['HS256'])
-        #     kakao_id = payload['kakao_id']
-        # except jwt.exceptions.InvalidTokenError:
-        #     raise AuthenticationFailed('Invalid token')
+        try:
+            # JWT 토큰 디코드
+            payload = jwt.decode(jwt_token, settings.SECRET_KEY, algorithms=['HS256'])
+            kakao_id = payload['kakao_id']
+        except jwt.exceptions.InvalidTokenError:
+            raise AuthenticationFailed('Invalid token')
 
         store = self.get_object(pk)
 
-        # if store.owner.kakao_id != kakao_id:
-        #     raise PermissionDenied
+        if store.owner.kakao_id != kakao_id:
+            raise PermissionDenied
 
         serializer = StoreDetailSerializer(store, data=request.data, partial=True)
         if serializer.is_valid():
             update_store = serializer.save()
-            return Response(StoreDetailSerializer(update_store).data)
+            return Response("OK")
         else:
             return Response(serializer.errors)
 
@@ -385,7 +384,7 @@ class StoreReviews(APIView):
     @swagger_auto_schema(
         operation_description="Create a review for a specific store",
         request_body=ReviewSerializer,
-        responses={201: ReviewSerializer, 400: "Bad Request"}
+        responses={201: "OK", 400: "Bad Request"}
     )
 
     def post(self, request, pk):
@@ -396,7 +395,7 @@ class StoreReviews(APIView):
                 store=self.get_object(pk)
             )
             serializer = ReviewSerializer(review)
-            return Response(serializer.data)
+            return Response("OK")
         else:
             return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 

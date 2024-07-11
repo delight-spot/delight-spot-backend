@@ -92,11 +92,19 @@ class Bookings(APIView):
     
     # swagger 추가
     @swagger_auto_schema(
-        operation_description="Create a booking for the user",
-        request_body=BookingSerializer,
-        responses={200: BookingSerializer}
+        operation_description="Create or toggle a booking for the user",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'store_pk': openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Items(type=openapi.TYPE_INTEGER),
+                    description='List of store primary keys'
+                )
+            }
+        ),
+        responses={200: "OK", 400: "Bad Request"}
     )
-
     def post(self, request):
         store_pks = request.data.get('store_pk')
         if not isinstance(store_pks, list):
@@ -126,9 +134,9 @@ class Bookings(APIView):
                 })
                 
             except Store.DoesNotExist:
-                return Response({"error": f"Store with pk {store_pk} does not exist"}, status=HTTP_400_BAD_REQUEST)
+                return Response({"error": "Store not exist"}, status=HTTP_400_BAD_REQUEST)
 
-        return Response({"status": "success", "details": response_data}, status=HTTP_200_OK)
+        return Response({"status": "success"}, status=HTTP_200_OK)
 
         # user_bookings = Booking.objects.filter(user=request.user)
         # if user_bookings.exists():
