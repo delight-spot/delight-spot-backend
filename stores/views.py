@@ -298,12 +298,8 @@ class StoresDetail(APIView):
         # 헤더에서 JWT 토큰 가져오기
         jwt_token = request.headers.get('Authorization')
 
-        try:
-            # JWT 토큰 디코드
-            payload = jwt.decode(jwt_token, settings.SECRET_KEY, algorithms=['HS256'])
-            kakao_id = payload['kakao_id']
-        except jwt.exceptions.InvalidTokenError:
-            raise AuthenticationFailed('Invalid token')
+        payload = jwt.decode(jwt_token, settings.SECRET_KEY, algorithms=['HS256'])
+        kakao_id = payload['kakao_id']
 
         store = self.get_object(pk)
 
@@ -338,6 +334,9 @@ class StoresDetail(APIView):
         
         store = self.get_object(pk)
         
+        print(store.owner.kakao_id)
+        print(kakao_id)
+
         if store.owner.kakao_id != kakao_id:
             raise PermissionDenied
         

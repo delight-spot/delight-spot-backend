@@ -36,7 +36,6 @@ class Bookings(APIView):
         jwt_token = request.headers.get('Authorization')
         
         try:
-            # JWT 토큰 디코드
             payload = jwt.decode(jwt_token, settings.SECRET_KEY, algorithms=['HS256'])
             kakao_id = payload['kakao_id']
         except jwt.exceptions.InvalidTokenError:
@@ -45,8 +44,7 @@ class Bookings(APIView):
         
         if request.user.kakao_id != kakao_id:
             raise PermissionDenied(detail="접근 권한이 없습니다.")
-
-
+        
         try:
             page = request.query_params.get("page", 1)
             page = int(page)
@@ -136,7 +134,7 @@ class Bookings(APIView):
             except Store.DoesNotExist:
                 return Response({"error": "Store not exist"}, status=HTTP_400_BAD_REQUEST)
 
-        return Response({"status": "success"}, status=HTTP_200_OK)
+        return Response({message}, status=HTTP_200_OK)
 
         # user_bookings = Booking.objects.filter(user=request.user)
         # if user_bookings.exists():
