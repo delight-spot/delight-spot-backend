@@ -18,6 +18,7 @@ from reviews.serializers import ReviewSerializer
 from stores.models import Store
 from stores.serializer import StoreDetailSerializer, StoreListSerializer
 from .serializer import PrivateUserSerializer, TinyUserSerializer
+from bookings.models import Booking
 import os
 import environ
 from pathlib import Path
@@ -451,6 +452,9 @@ class KakaoLogin(APIView):
                 user = User.objects.get(kakao_id=kakao_id)
                 login(request, user)
 
+                # 유저에게 예약 목록이 있는지 확인하고, 없으면 생성
+                self.ensure_user_has_booking_list(user)
+
                 # JWT 토큰 생성
                 payload = {'kakao_id': kakao_id}
                 jwt_token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
@@ -461,7 +465,9 @@ class KakaoLogin(APIView):
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-
+    def ensure_user_has_booking_list(self, user):
+        if not Booking.objects.filter(user=user).exists():
+            Booking.objects.create(user=user)
 
 
 class KakaoSignup(APIView):
@@ -516,8 +522,15 @@ class KakaoSignup(APIView):
             user.save()
             login(request, user)
 
+            # 유저에게 예약 목록이 있는지 확인하고, 없으면 생성
+            self.ensure_user_has_booking_list(user)
+
             payload = {'kakao_id': kakao_id}
             jwt_token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
             return Response(status=status.HTTP_200_OK, data={'signup': True, 'kakao_jwt': jwt_token})
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+    def ensure_user_has_booking_list(self, user):
+        if not Booking.objects.filter(user=user).exists():
+            Booking.objects.create(user=user)

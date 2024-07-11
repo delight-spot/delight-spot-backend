@@ -1,9 +1,11 @@
 from django.urls import path
 from . import views
+# from bookings.views import BookingToggle
 
 urlpatterns = [
     path('stores', views.Stores.as_view()),
     path("stores/<int:pk>", views.StoresDetail.as_view()),
+
     path("stores/<int:pk>/sellinglists", views.SellingListView.as_view()),
     path("stores/sellinglists/<int:pk>", views.SellingListDetail.as_view()),
 

@@ -10,6 +10,7 @@ import jwt
 from .serializer import StoreListSerializer, SellingListSerializer, StoreDetailSerializer, StorePostSerializer
 from .models import Store, SellList
 from reviews.serializers import ReviewSerializer, ReviewDetailSerializer
+from bookings.models import Booking
 
 # swagger 추가
 from drf_yasg.utils import swagger_auto_schema
@@ -281,7 +282,6 @@ class StoresDetail(APIView):
 
 
     def get(self, request, pk):
-        print(request.user)
         store = self.get_object(pk)
         serializer = StoreDetailSerializer(store, context={'request': request})
         return Response(serializer.data)
@@ -296,27 +296,29 @@ class StoresDetail(APIView):
     def put(self, request, pk):
 
         # 헤더에서 JWT 토큰 가져오기
-        jwt_token = request.headers.get('Authorization')
-        print(jwt_token)
+        # jwt_token = request.headers.get('Authorization')
+        # print(jwt_token)
 
-        try:
-            # JWT 토큰 디코드
-            payload = jwt.decode(jwt_token, settings.SECRET_KEY, algorithms=['HS256'])
-            kakao_id = payload['kakao_id']
-        except jwt.exceptions.InvalidTokenError:
-            raise AuthenticationFailed('Invalid token')
+        # try:
+        #     # JWT 토큰 디코드
+        #     payload = jwt.decode(jwt_token, settings.SECRET_KEY, algorithms=['HS256'])
+        #     kakao_id = payload['kakao_id']
+        # except jwt.exceptions.InvalidTokenError:
+        #     raise AuthenticationFailed('Invalid token')
 
         store = self.get_object(pk)
 
-        if store.owner.kakao_id != kakao_id:
-            raise PermissionDenied
-        
+        # if store.owner.kakao_id != kakao_id:
+        #     raise PermissionDenied
+
         serializer = StoreDetailSerializer(store, data=request.data, partial=True)
         if serializer.is_valid():
             update_store = serializer.save()
             return Response(StoreDetailSerializer(update_store).data)
         else:
             return Response(serializer.errors)
+
+        
         
     # swagger
     @swagger_auto_schema(
@@ -342,6 +344,8 @@ class StoresDetail(APIView):
         
         store.delete()
         return Response(status=HTTP_204_NO_CONTENT)
+
+
     
 
 class StoreReviews(APIView):
