@@ -184,15 +184,20 @@ class UserReviewDetail(APIView):
         except Reviews.DoesNotExist:
             return Response({"error": "Review not found."}, status=status.HTTP_404_NOT_FOUND)
 
+        review_data = request.data.get('reviewData', {})
+        review_data['id'] = pk
+
         serializer = ReviewSerializer(
             review,
-            data=request.data,
+            data=review_data,
             partial=True,
         )
+        print("request.data", request.data)
 
         if serializer.is_valid():
             update_reviews = serializer.save()
-            logger.info(f"Updated review: {update_reviews}")
+            print("ReviewSerializer(update_reviews).data",ReviewSerializer(update_reviews).data)
+            # logger.info(f"Updated review: {update_reviews}")
             return Response(ReviewSerializer(update_reviews).data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
