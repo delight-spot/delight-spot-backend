@@ -1,9 +1,10 @@
 from django.urls import path
 from rest_framework.authtoken.views import obtain_auth_token
 from . import views
-from .views import (Me, Users, PublicUser, ChangePassword, LogOut, UserReviews, UserReviewDetail, UserStore, UserStoreDetail, KakaoLogin, KakaoSignup)
+from .views import (Me, Users, PublicUser, ChangePassword, LogIn, UserReviews, UserReviewDetail, UserStore, UserStoreDetail, KakaoLogin, KakaoSignup)
 
 urlpatterns = [
+    path("users/log-in", LogIn.as_view()),
     # path("users/log-out", LogOut.as_view()),
     # path("users/jwt-login", JWTLogIn.as_view()),
     # path("users/jwt-signup", JWTSignup.as_view()),

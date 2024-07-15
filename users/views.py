@@ -22,11 +22,13 @@ from bookings.models import Booking
 import os
 import environ
 from pathlib import Path
+import logging
 
 # swagger
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
+logger = logging.getLogger(__name__)
 
 class Me(APIView):
     permission_classes = [IsAuthenticated]
@@ -154,7 +156,7 @@ class UserReviewDetail(APIView):
 
     def get_list(self, pk, user):
         try:
-            return Reviews.objects.get(pk=pk, user=user)
+            return Reviews.objects.get(pk=pk)
         except Reviews.DoesNotExist:
             raise NotFound
 
@@ -163,8 +165,7 @@ class UserReviewDetail(APIView):
         operation_description="Retrieve a specific review by ID for a specific user",
         responses={200: ReviewSerializer, 404: "Not Found"}
     )
-
-    def get(self, request, pk, username):  # username 인자 추가
+    def get(self, request, pk, username):
         review = self.get_list(pk, request.user)
         serializer = ReviewSerializer(review, context={"request": request})
         return Response(serializer.data)
@@ -175,31 +176,42 @@ class UserReviewDetail(APIView):
         request_body=ReviewSerializer,
         responses={200: "OK", 400: "Bad Request"}
     )
-
     def put(self, request, pk, username):
-        review = self.get_list(pk, request.user)
+        try:
+            review = self.get_list(pk, request.user)
+            if review.user != request.user:
+                return Response({"error": "You do not have permission to modify this review."}, status=status.HTTP_403_FORBIDDEN)
+        except Reviews.DoesNotExist:
+            return Response({"error": "Review not found."}, status=status.HTTP_404_NOT_FOUND)
+
         serializer = ReviewSerializer(
             review,
             data=request.data,
             partial=True,
         )
+
         if serializer.is_valid():
-            update_wishlist = serializer.save()
-            serializer = ReviewSerializer(update_wishlist)
-            return Response("OK")
+            update_reviews = serializer.save()
+            logger.info(f"Updated review: {update_reviews}")
+            return Response(ReviewSerializer(update_reviews).data, status=status.HTTP_200_OK)
         else:
-            return Response(serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
     # swagger
     @swagger_auto_schema(
         operation_description="Delete a specific review by ID for a specific user",
         responses={200: "OK", 404: "Not Found"}
     )
-
     def delete(self, request, pk, username):
-        review = self.get_list(pk, request.user)
+        try:
+            review = self.get_list(pk, request.user)
+            if review.user != request.user:
+                return Response({"error": "You do not have permission to delete this review."}, status=status.HTTP_403_FORBIDDEN)
+        except Reviews.DoesNotExist:
+            return Response({"error": "Review not found."}, status=status.HTTP_404_NOT_FOUND)
+
         review.delete()
-        return Response(status=HTTP_200_OK)
+        return Response(status=status.HTTP_200_OK)
 
 class UserStore(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
