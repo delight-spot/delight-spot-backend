@@ -18,4 +18,11 @@ COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the project files into the container
-COPY . /project/
+# COPY . /project/
+COPY build.sh /build.sh
+
+# Give entrypoint script execution permission
+RUN chmod +x /build.sh
+
+# Run entrypoint script
+ENTRYPOINT ["/build.sh"]

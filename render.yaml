@@ -1,0 +1,24 @@
+databases:
+  - name: delight-spot-dackend
+    plan: free
+    databaseName: delight-spot-dackend
+    user: delight-spot-dackend
+    region: singapore
+
+services:
+  - type: web
+    plan: free
+    name: delight-spot-dackend
+    runtime: python
+    region: singapore
+    buildCommand: "./build.sh"
+    startCommand: "python -m gunicorn mysite.asgi:application -k uvicorn.workers.UvicornWorker"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: delight-spot-dackend
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: WEB_CONCURRENCY
+        value: 4
