@@ -19,21 +19,18 @@ services:
       - my-network
 
   delight-spot-database:
-    image: mysql:8.0
-    platform: linux/amd64
-    container_name: delight-spot-container
+    image: postgres:13
+    container_name: delight-spot-database
     volumes:
-      - ./data/mysql/db:/var/lib/mysql
-      # - mysql-data:/var/lib/mysql
+      - postgres-data:/var/lib/postgresql/data
     environment:
-      MYSQL_ROOT_PASSWORD: jth
-      MYSQL_DATABASE: delight-spot-db
-      MYSQL_USER: jth
-      MYSQL_PASSWORD: jth
+      POSTGRES_DB: delight-spot-db
+      POSTGRES_USER: jth
+      POSTGRES_PASSWORD: jth
     ports:
-      - "3306:3306"
+      - "5432:5432"
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p", "jth"]
+      test: ["CMD-SHELL", "pg_isready -U jth"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -41,7 +38,36 @@ services:
       - my-network
 
 volumes:
-  mysql-data:
+  postgres-data:
 
 networks:
   my-network:
+
+
+#   delight-spot-database:
+#     image: mysql:8.0
+#     platform: linux/amd64
+#     container_name: delight-spot-container
+#     volumes:
+#       - ./data/mysql/db:/var/lib/mysql
+#       # - mysql-data:/var/lib/mysql
+#     environment:
+#       MYSQL_ROOT_PASSWORD: jth
+#       MYSQL_DATABASE: delight-spot-db
+#       MYSQL_USER: jth
+#       MYSQL_PASSWORD: jth
+#     ports:
+#       - "3306:3306"
+#     healthcheck:
+#       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p", "jth"]
+#       interval: 10s
+#       timeout: 5s
+#       retries: 5
+#     networks:
+#       - my-network
+
+# volumes:
+#   mysql-data:
+
+# networks:
+#   my-network:
