@@ -15,6 +15,8 @@ import os
 import environ
 from datetime import timedelta
 import dj_database_url
+import sentry_sdk
+
 
 env = environ.Env()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -234,3 +236,10 @@ LOGGING = {
         },
     },
 }
+
+if not DEBUG:
+    sentry_sdk.init(
+    dsn="https://203c9333b857d37c32e703024ef63b2a@o4507617701003264.ingest.us.sentry.io/4507617709522944",
+    traces_sample_rate=1.0,
+    profiles_sample_rate=1.0,
+)
