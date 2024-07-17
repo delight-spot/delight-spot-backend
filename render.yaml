@@ -12,30 +12,13 @@ services:
     runtime: python
     region: singapore
     buildCommand: "./build.sh"
-    startCommand: "python -m gunicorn config.asgi:application -k uvicorn.workers.UvicornWorker"
-
+    startCommand: "gunicorn config.wsgi:application"
     envVars:
-      - key: DATABASE_NAME
-        value: delightspotbackend
-      - key: DATABASE_USER
-        value: delightspotbackend
-      - key: DATABASE_PASSWORD
-        value: your-password
-      - key: DATABASE_HOST
-        value: delightspotbackend
-      - key: DATABASE_PORT
-        value: 3306
+      - key: DATABASE_URL
+        fromDatabase:
+          name: delightspotbackend
+          property: connectionString
       - key: SECRET_KEY
         generateValue: true
       - key: WEB_CONCURRENCY
         value: 4
-
-    # envVars:
-    #   - key: DATABASE_URL
-    #     fromDatabase:
-    #       name: delightspot
-    #       property: connectionString
-    #   - key: SECRET_KEY
-    #     generateValue: true
-    #   - key: WEB_CONCURRENCY
-    #     value: 4

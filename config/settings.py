@@ -14,7 +14,7 @@ from pathlib import Path
 import os
 import environ
 from datetime import timedelta
-# import dj_database_url
+import dj_database_url
 
 env = environ.Env()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -117,14 +117,7 @@ if DEBUG:
 else:
 
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': os.getenv('DATABASE_NAME', 'delightspotbackend'),
-            'USER': os.getenv('DATABASE_USER', 'delightspotbackend'),
-            'PASSWORD': os.getenv('DATABASE_PASSWORD', 'jth'),
-            'HOST': os.getenv('DATABASE_HOST', 'delightspotbackend'),  # docker-compose.yml 파일에서 설정한 데이터베이스 서비스 이름
-            'PORT': os.getenv('DATABASE_PORT', '3306'),
-        }
+        'default': dj_database_url.config(conn_max_age=600)
     }
 
     # DATABASES = {
