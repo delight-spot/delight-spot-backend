@@ -117,10 +117,21 @@ if DEBUG:
             }
     }
 else:
-
     DATABASES = {
-        'default': dj_database_url.config(conn_max_age=600)
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': env('delight-spot-db'),
+            'USER': env('jth'),
+            'PASSWORD': env('jth'),
+            'HOST': 'delight-spot-database',
+            'PORT': '5432',
+        }
     }
+
+
+    # DATABASES = {
+    #     'default': dj_database_url.config(conn_max_age=600)
+    # }
 
     # DATABASES = {
     #     'default': {
@@ -170,9 +181,16 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+
 if not DEBUG:
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+
+
+# if not DEBUG:
+#     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+#     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
