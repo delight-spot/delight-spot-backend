@@ -115,23 +115,28 @@ if DEBUG:
             }
     }
 else:
+
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'delight-spot-db',
-            'USER': 'jth',
-            'PASSWORD': 'jth',
-            'HOST': 'delight-spot-database',  # docker-compose.yml 파일에서 설정한 데이터베이스 서비스 이름
-            'PORT': '3306',
+            'NAME': os.getenv('DATABASE_NAME', 'delight-spot-db'),
+            'USER': os.getenv('DATABASE_USER', 'jth'),
+            'PASSWORD': os.getenv('DATABASE_PASSWORD', 'jth'),
+            'HOST': os.getenv('DATABASE_HOST', 'delight-spot-database'),  # docker-compose.yml 파일에서 설정한 데이터베이스 서비스 이름
+            'PORT': os.getenv('DATABASE_PORT', '3306'),
         }
     }
 
-# else:
-#     DATABASES = {
-#         'default': dj_database_url.config(
-#             conn_max_age=600, #timeout 설정
-#         )
-#     }
+    # DATABASES = {
+    #     'default': {
+    #         'ENGINE': 'django.db.backends.mysql',
+    #         'NAME': 'delight-spot-db',
+    #         'USER': 'jth',
+    #         'PASSWORD': 'jth',
+    #         'HOST': 'delight-spot-database',  # docker-compose.yml 파일에서 설정한 데이터베이스 서비스 이름
+    #         'PORT': '3306',
+    #     }
+    # }
 
 
 # Password validation
