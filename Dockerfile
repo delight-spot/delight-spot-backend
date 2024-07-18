@@ -26,6 +26,3 @@ RUN chmod +x /build.sh
 
 # Run entrypoint script
 ENTRYPOINT ["/build.sh"]
-
-
-
