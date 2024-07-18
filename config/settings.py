@@ -171,7 +171,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # DEBUG 모드에서도 STATIC_ROOT 설정
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # DEBUG 모드에서도 STATIC_ROOT 설정
 
 if not DEBUG:
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
