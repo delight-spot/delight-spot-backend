@@ -16,3 +16,5 @@ python manage.py migrate
 
 # Start the application server
 exec "$@"
+
+
