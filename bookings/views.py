@@ -30,20 +30,19 @@ class Bookings(APIView):
         ]
     )
 
+
     def get(self, request):
-        
         # 헤더에서 JWT 토큰 가져오기
-        jwt_token = request.headers.get('Authorization')
+        # jwt_token = request.headers.get('Authorization')
         
-        try:
-            payload = jwt.decode(jwt_token, settings.SECRET_KEY, algorithms=['HS256'])
-            kakao_id = payload['kakao_id']
-        except jwt.exceptions.InvalidTokenError:
-            raise AuthenticationFailed('Invalid token')
+        # try:
+        #     payload = jwt.decode(jwt_token, settings.SECRET_KEY, algorithms=['HS256'])
+        #     kakao_id = payload['kakao_id']
+        # except jwt.exceptions.InvalidTokenError:
+        #     raise AuthenticationFailed('Invalid token')
         
-        
-        if request.user.kakao_id != kakao_id:
-            raise PermissionDenied(detail="접근 권한이 없습니다.")
+        # if request.user.kakao_id != kakao_id:
+        #     raise PermissionDenied(detail="접근 권한이 없습니다.")
         
         try:
             page = request.query_params.get("page", 1)
@@ -57,37 +56,16 @@ class Bookings(APIView):
 
         # 사용자의 모든 예약된 상점 가져오기
         # prefetch_related: 조인을 하지 않고 개별 쿼리를 실행 후, django에서 직접 데이터 조합
-        # user_bookings = Booking.objects.filter(user__username=request.user.username).prefetch_related('store')
-        user_bookings = Booking.objects.filter(user__kakao_id=kakao_id).prefetch_related('store')
+        user_bookings = Booking.objects.filter(user__username=request.user.username).prefetch_related('store')
+        # user_bookings = Booking.objects.filter(user__kakao_id=kakao_id).prefetch_related('store')
         
-        # 상점 리스트를 직접 구성하는 대신, 상점에 대한 쿼리셋을 사용
-        store_ids = []
-        for booking in user_bookings:
-            store_ids.extend(booking.store.values_list('id', flat=True))
+        paginated_bookings = user_bookings[start:end]
 
-        # 상점 쿼리셋을 구성
-        store_queryset = Store.objects.filter(id__in=store_ids)
-
-        # 필터링 처리
-        keyword = request.query_params.get('keyword')
-        try:
-            if keyword:
-                store_queryset = store_queryset.filter(name__icontains=keyword)
-        except ValueError:
-            raise ParseError(detail="Invalid 'keyword' parameter value.")
-
-        store_types = request.query_params.getlist('type')
-        try:
-            if store_types:
-                store_queryset = store_queryset.filter(kind_menu__in=store_types)
-        except ValueError:
-            raise ParseError(detail="Invalid 'type' parameter value.")
-
-        paginated_stores = store_queryset[start:end]
-
-        serializer = BookingStoreSerializer(paginated_stores, many=True, context={"request": request})
+        serializer = BookingSerializer(paginated_bookings, many=True, context={"request": request})
         return Response(serializer.data)
-    
+
+
+
     # swagger 추가
     @swagger_auto_schema(
         operation_description="Create or toggle a booking for the user",
