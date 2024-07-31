@@ -421,7 +421,8 @@ class KakaoLogin(APIView):
                     data={
                         "grant_type": "authorization_code",
                         "client_id": "583f1ebb47209c90313ca9808363f605",
-                        "redirect_uri": "http://127.0.0.1:3000/social/kakao",
+                        # "redirect_uri": "http://127.0.0.1:3000/social/kakao",
+                        "redirect_uri": "https://delight-spot-web.vercel.app/social/kakao",
                         "code": code,
                     },
                 )
