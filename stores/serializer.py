@@ -147,20 +147,23 @@ class ListSerializer(ModelSerializer):
 class StoreListSerializer(ModelSerializer):
 
     total_rating = serializers.SerializerMethodField()
-    # taste_rating = serializers.SerializerMethodField()
-    # atmosphere_rating = serializers.SerializerMethodField()
-    # kindness_rating = serializers.SerializerMethodField()
-    # clean_rating = serializers.SerializerMethodField()
-    # parking_rating = serializers.SerializerMethodField()
-    # restroom_rating = serializers.SerializerMethodField()
-
 
     reviews_len = serializers.SerializerMethodField()
     is_owner = serializers.SerializerMethodField()
+    
     # 역접근자는 위험하다 -> 방 하나에 수 천, 수 만개의 특성을 가지고 있을 수 있기 때문이다. -> pagination이 있어야 한다.
-    store_photo = serializers.JSONField(required=False)
+    # store_photo = serializers.JSONField(required=False)
+    store_photo = serializers.SerializerMethodField()
+
     is_liked = serializers.SerializerMethodField()
     user_name = serializers.SerializerMethodField()
+
+
+    def get_store_photo(self, store):
+        if store.store_photo:
+            return [store.store_photo]
+        return []
+
 
     def get_user_name(self, store):
         return store.owner.username
@@ -243,7 +246,13 @@ class StoreDetailSerializer(ModelSerializer):
     restroom_rating = serializers.SerializerMethodField()
 
     is_owner = serializers.SerializerMethodField()
-    store_photo = serializers.JSONField(required=False)
+
+    # store_photo = serializers.JSONField(required=False)
+    store_photo = serializers.ListField(
+        child=serializers.URLField(),
+        required=False
+    )
+
     is_liked = serializers.SerializerMethodField()
 
     class Meta:

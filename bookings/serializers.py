@@ -9,14 +9,22 @@ from stores.models import Store
 
 
 class BookingStoreSerializer(ModelSerializer):
-    photos = serializers.JSONField(required=False)
+    # photos = serializers.JSONField(required=False)
 
+    photos = serializers.SerializerMethodField()
+
+    def get_photos(self, store):
+        if store.store_photo:
+            return [store.store_photo]
+        return []
+    
     class Meta:
         model = Store
         fields = ("pk", "name", "photos",  "created_at")
 
+
 class BookingSerializer(ModelSerializer):
-    store = BookingStoreList(read_only=True, many=True)
+    store = BookingStoreSerializer(read_only=True, many=True)
     # user = TinyUserSerializer(read_only=True)
 
     class Meta:

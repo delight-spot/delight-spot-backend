@@ -33,16 +33,16 @@ class Bookings(APIView):
 
     def get(self, request):
         # 헤더에서 JWT 토큰 가져오기
-        # jwt_token = request.headers.get('Authorization')
+        jwt_token = request.headers.get('Authorization')
         
-        # try:
-        #     payload = jwt.decode(jwt_token, settings.SECRET_KEY, algorithms=['HS256'])
-        #     kakao_id = payload['kakao_id']
-        # except jwt.exceptions.InvalidTokenError:
-        #     raise AuthenticationFailed('Invalid token')
+        try:
+            payload = jwt.decode(jwt_token, settings.SECRET_KEY, algorithms=['HS256'])
+            kakao_id = payload['kakao_id']
+        except jwt.exceptions.InvalidTokenError:
+            raise AuthenticationFailed('Invalid token')
         
-        # if request.user.kakao_id != kakao_id:
-        #     raise PermissionDenied(detail="접근 권한이 없습니다.")
+        if request.user.kakao_id != kakao_id:
+            raise PermissionDenied(detail="접근 권한이 없습니다.")
         
         try:
             page = request.query_params.get("page", 1)
@@ -56,8 +56,8 @@ class Bookings(APIView):
 
         # 사용자의 모든 예약된 상점 가져오기
         # prefetch_related: 조인을 하지 않고 개별 쿼리를 실행 후, django에서 직접 데이터 조합
-        user_bookings = Booking.objects.filter(user__username=request.user.username).prefetch_related('store')
-        # user_bookings = Booking.objects.filter(user__kakao_id=kakao_id).prefetch_related('store')
+        # user_bookings = Booking.objects.filter(user__username=request.user.username).prefetch_related('store')
+        user_bookings = Booking.objects.filter(user__kakao_id=kakao_id).prefetch_related('store')
         
         paginated_bookings = user_bookings[start:end]
 
