@@ -153,7 +153,11 @@ class StoreListSerializer(ModelSerializer):
     
     # 역접근자는 위험하다 -> 방 하나에 수 천, 수 만개의 특성을 가지고 있을 수 있기 때문이다. -> pagination이 있어야 한다.
     # store_photo = serializers.JSONField(required=False)
-    store_photo = serializers.SerializerMethodField()
+    # store_photo = serializers.SerializerMethodField()
+    store_photo = serializers.ListField(
+        child=serializers.URLField(),
+        required=False
+    )
 
     is_liked = serializers.SerializerMethodField()
     user_name = serializers.SerializerMethodField()
