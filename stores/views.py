@@ -175,7 +175,9 @@ class Stores(APIView):
         start = (page - 1) * page_size
         end = start + page_size
 
-        all_store = Store.objects.all()
+
+        all_store = Store.objects.all().order_by('-pk')  # 최신순 정렬
+        # all_store = Store.objects.all()
 
         # 검색 처리 :keyword = request.query_params.get('keyword')
         keyword = request.query_params.get('keyword')
